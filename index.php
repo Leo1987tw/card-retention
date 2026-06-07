@@ -9,7 +9,7 @@
 <body>
     <header></header>
     <main>
-        <iframe src="./vocabuary.php" frameborder="0"></iframe>
+        <iframe src="./vocabulary.php" frameborder="0"></iframe>
     </main>
     <footer></footer>
 </body>
