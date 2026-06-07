@@ -5,22 +5,26 @@ if(session_status() === PHP_SESSION_NONE){
 }
 
 try{
-    $dsn = "mysql:host=localhost; charset=utf8; dbname=vocabulary;";
-    $pdo = new PDO($dsn, 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $config = require 'db_config.php';
+    $dsn = "mysql:host={$config['host']}; charset=utf8; dbname={$config['dbname']};";
+    $pdo = new PDO($dsn, $config['username'], $config['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 }catch(Exception $exception){
     echo json_encode([
         "status" => "error", 
         "message" => $exception->getMessage()
         ]);
+    exit;
 }
 
 if(isset($_GET['action']) && $_GET['action'] == 'draw'){
     header('Content-Type: application/json; charset=utf8;');
 
     if(!isset($_SESSION['word_queue']) || empty($_SESSION['word_queue'])){
-        if($_POST['learner']){
-            $sql = "SELECT `word_id` FROM `learning_records` WHERE `learner_id`='{$_POST['learner']}' AND `is_learned`='0' ORDER BY RAND();";
-            $_SESSION['word_queue'] = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        if(isset($_POST['learner'])){
+            $sql = "SELECT `word_id` FROM `learning_records` WHERE `learner_id`= ? AND `is_learned`='0' ORDER BY RAND();";
+            $statement = $pdo->prepare($sql);
+            $statement->execute([$_POST['learner']]);
+            $_SESSION['word_queue'] = $statement->fetchAll(PDO::FETCH_COLUMN);
         }else {
             $sql = "SELECT `id` FROM `words` ORDER BY RAND()";
             $_SESSION['word_queue'] = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
@@ -34,8 +38,10 @@ if(isset($_GET['action']) && $_GET['action'] == 'draw'){
     
     $draw_word_id = array_shift($_SESSION['word_queue']);
 
-    $sql = "SELECT * FROM `words` WHERE `id`='$draw_word_id'";
-    $word_data = $pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
+    $sql = "SELECT * FROM `words` WHERE `id`= ?";
+    $statement = $pdo->prepare($sql);
+    $statement->execute([$draw_word_id]);
+    $word_data = $statement->fetch(PDO::FETCH_ASSOC);
     
     if(!$word_data){
         echo json_encode(["status" => "error", "message" => "資料庫裡沒有這個單字"], JSON_UNESCAPED_UNICODE);
@@ -47,7 +53,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'draw'){
 
     if(empty($word_data['phonetic']) || empty($word_data['definition'])){
         $eng_url = "https://api.dictionaryapi.dev/api/v2/entries/en/" . $word;
-        $options = array('http' => array('timeout' => 3));
+        $options = array('http' => array('timeout' => 3, 'user_agent' => 'Mozilla/5.0'));
         $context = stream_context_create($options);
         $eng_response = @file_get_contents($eng_url, false, $context);
 
@@ -94,7 +100,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'draw'){
 
         if(empty($word_data['translation'])){
             $tw_url = "http://dict.e.opac.vip/dict.php?sw=" . $word;
-            $options = array('http' => array('timeout' => 3));
+            $options = array('http' => array('timeout' => 3, 'user_agent' => 'Mozilla/5.0'));
             $context = stream_context_create($options);
             $tw_response = @file_get_contents($tw_url, false, $context);
             
@@ -277,6 +283,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'draw'){
         <div class="card" id="card">
             <div class="face front">
                 <p class="word">word</p>
+                <p class="part-of-speech">part of speech</p>
                 <p class="phonetic">phonetic</p>
                 <button class="" id=audio onclick="playAudio()"></button>
             </div>
@@ -287,7 +294,10 @@ if(isset($_GET['action']) && $_GET['action'] == 'draw'){
         </div>
     </div>
 
-    <button onclick="drawCard()"></button>
+    <div>
+        <button onclick="drawCard()"></button>
+        <button onclick="random()"></button>
+    </div>
 </div>
 
 <script>
