@@ -116,58 +116,15 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
         }
     }
 
-    if(empty($word_data['translation'])){
-        $tw_url = "http://dict.e.opac.vip/dict.php?sw=" . $word;
-        $options = array('http' => array('timeout' => 3, 'user_agent' => 'Mozilla/5.0'));
-        $context = stream_context_create($options);
-        $tw_response = @file_get_contents($tw_url, false, $context);
-            
-        if($tw_response !== false){
-            $tw_data = json_decode($tw_response, true);
-
-            if(isset($tw_data['translation'])){
-                $raw_translation = $tw_data['translation'];
-
-                $part_of_speech_map_tw = [
-                    1 => "n", 
-                    2 => "v", 
-                    3 => "adj", 
-                    4 => "adv", 
-                    5 => "prep", 
-                    6 => "conj", 
-                    7 => "prop"
-                ];
-
-                $part_of_speech_tag = isset($part_of_speech_map_tw[$word_data['part_of_speech']]) ? $part_of_speech_map_tw[$word_data['part_of_speech']] : "";
-                $filtered_translation = "";
-
-                if(!empty($part_of_speech_tag)){
-                    $pattern = "/(" . $part_of_speech_tag . "\.)(.*?)(?=[a-zA-Z]+\.|\n|$)/ui";
-
-                    if(preg_match($pattern, $raw_translation, $matches)){
-                        $filtered_translation = trim($matches[2]);
-                        $filtered_translation = trim(preg_replace("[\r\n]+", "", $filtered_translation), ";, ");
-                    }
-                }
-
-                if(empty($filtered_translation)){
-                    $filtered_translation = str_replace("\n", "; ", $raw_translation);
-                }
-                    
-                $word_data['translation'] = $filtered_translation;
-                $need_update = true;
-            }
-        }
-    }
-
     if($need_update === true){
         $sql = "UPDATE `words` SET `phonetic` = ?, `definition` = ?, `translation` = ?, `audio_url` = ? WHERE `id` = ?;";
         $statement = $pdo->prepare($sql);
         $statement->execute([
-            $word_data['phonetic'] ? $word_data['phonetic'] : "", 
-            $word_data['definition'] ? $word_data['definition'] : "", 
-            $word_data['translation'] ? $word_data['translation'] : "", 
-            $word_data['audio_url'] ? $word_data['audio_url'] : "", 
+
+            $word_data['phonetic'] ?? "", 
+            $word_data['definition'] ?? "", 
+            $word_data['translation'] ?? "", 
+            $word_data['audio_url'] ?? "", 
             $word_data['id']
             ]);
     }
@@ -316,6 +273,7 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
 
     .phonetic {
         font-size: 1.6rem;
+        font-family: "Lucida Sans Unicode", "Arial Unicode MS", "Segoe UI", sans-serif;
     }
 
     .definition {
@@ -327,11 +285,9 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
     }
 
     .translation {
-        height: 40%;
+        display: block;
         text-align: justify;
         font-size: 1.4rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 </style>
 
@@ -347,8 +303,8 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
                 </div>
             </div>
             <div class="face back">
-                <p class="definition" id="definition">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cum dolor facere perspiciatis beatae, veritatis soluta temporibus, autem quibusdam nostrum velit laboriosam praesentium possimus voluptas vero, aliquam exercitationem ipsam tempora deleniti.</p>
-                <p class="translation" id="translation">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nulla tempora doloribus delectus nihil nesciunt sequi veniam obcaecati numquam sed voluptatum neque hic, accusamus nobis tenetur aut expedita culpa amet quia?</p>
+                <p class="translation" id="translation">中文翻譯</p>
+                <p class="definition" id="definition">english definition</p>
             </div>
         </div>
     </div>
