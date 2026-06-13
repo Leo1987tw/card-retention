@@ -291,6 +291,8 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
     }
 </style>
 
+<!-- <button onclick="myFetch()">automatically fetch vocabulary</button> -->
+
 <div class="container">
     <div class="card-board" id="card-board" onclick="flipCard(event)">
         <div class="card" id="card">
@@ -311,7 +313,7 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
 
     <div class="button">
         <button onclick="shuffleCard()">洗牌</button>
-        <button onclick="drawCard()">抽牌</button>
+        <button id="drawCard" onclick="drawCard()">抽牌</button>
     </div>
 </div>
 
@@ -334,14 +336,14 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
         }
 
         card.style.transform = `rotateY(${degree}deg)`;
-    }
+    };
 
     card.addEventListener('transitionend', () => {
         card.style.transition = "none";
 
         degree %= 360;
         card.style.transform = `rotateY(${degree}deg)`;
-    })
+    });
 
     function drawCard(){
         card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
@@ -365,7 +367,7 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
             console.error("error", error);
             document.getElementById('word').innerText = "wrong connection";
         });
-    }
+    };
 
     function shuffleCard(){
         card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
@@ -388,8 +390,8 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
         }).catch(error => {
             console.error("error", error);
             document.getElementById('word').innerText = "wrong connection";
-        })
-    }
+        });
+    };
 
     function playAudio(event){
         event.stopPropagation();
@@ -407,5 +409,19 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
                 });
             }
         }
-    }
+    };
+
+    // const randomSleep = () => {
+    //     let ms = 1000 + 1000 * Math.random();
+    //     return new Promise(resolve => setTimeout(resolve, ms));
+    // };
+
+    // async function myFetch(){
+    //     let i;
+    //     let drawCardvar = document.getElementById('drawCard');
+    //     for(i = 0; i < 10000 ; i++){
+    //         drawCardvar.click();
+    //         await randomSleep();
+    //     }
+    // };
 </script>

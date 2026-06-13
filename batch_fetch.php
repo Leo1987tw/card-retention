@@ -1,189 +1,149 @@
 <?php
-/**
- * 字典資料批量補全腳本 (繞過 cURL 指紋封鎖版)
- * 安全性：絕不影響、不更新、不覆蓋現有的中文翻譯欄位。
- */
+// 1. 基本安全設定：不限執行時間，並開啟即時畫面輸出
+set_time_limit(0);
+ob_implicit_flush(true);
+if (ob_get_level() == 0) ob_start();
 
-if (php_sapi_name() !== 'cli') {
-    die("Error: This script can only be run from the command line (CLI).\n");
-}
+header('Content-Type: text/html; charset=utf-8;');
 
 try {
     $config = require_once 'db_config.php';
-    $dsn = "mysql:host={$config['host']};charset=utf8;dbname={$config['dbname']};";
-    $pdo = new PDO($dsn, $config['username'], $config['password'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
+    $dsn = "mysql:host={$config['host']}; charset=utf8; dbname={$config['dbname']};";
+    $pdo = new PDO($dsn, $config['username'], $config['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 } catch (Exception $exception) {
-    die("Database connection failed: " . $exception->getMessage() . "\n");
-}
-
-$batch_size = 50; 
-
-echo "==================================================\n";
-echo "Starting Batch Fetch via Dictionary API at " . date('Y-m-d H:i:s') . "\n";
-echo "==================================================\n";
-
-$sql = "SELECT * FROM `words` 
-        WHERE `phonetic` = '' OR `phonetic` IS NULL 
-           OR `definition` = '' OR `definition` IS NULL 
-           OR `audio_url` = '' OR `audio_url` IS NULL 
-        LIMIT :batch_size";
-
-$statement = $pdo->prepare($sql);
-$statement->bindValue(':batch_size', $batch_size, PDO::PARAM_INT);
-$statement->execute();
-$words_to_fetch = $statement->fetchAll();
-
-if (empty($words_to_fetch)) {
-    echo "Excellent! All words in the database are already fully processed.\n";
+    echo "資料庫連線失敗: " . $exception->getMessage();
     exit;
 }
 
-echo "Found " . count($words_to_fetch) . " words need to be processed in this batch.\n\n";
+// 2. 初始化進度記錄表（如果不存在就自動建立）
+$pdo->exec("CREATE TABLE IF NOT EXISTS `fetch_progress` (
+    `id` INT PRIMARY KEY,
+    `last_word_id` INT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+
+$checkProgress = $pdo->query("SELECT COUNT(*) FROM `fetch_progress` WHERE `id` = 1")->fetchColumn();
+if ($checkProgress == 0) {
+    $pdo->exec("INSERT INTO `fetch_progress` (`id`, `last_word_id`) VALUES (1, 0);");
+}
+
+// 讀取上次更新到哪一個 word_id
+$last_word_id = $pdo->query("SELECT `last_word_id` FROM `fetch_progress` WHERE `id` = 1")->fetchColumn();
+
+echo "<h2>📚 單字庫高速批次補全系統 🚀</h2>";
+echo "💾 上次進度：將從單字序號 <strong>> {$last_word_id}</strong> 開始掃描。<br>";
+
+// 3. 核心優化：直接在 SQL 篩選出大於上次進度，且「真正需要去抓 API」的單字，只拿 50 個
+// 🌟 這樣做，那些已經有資料的單字在資料庫端就直接被過濾（跳過）了，不需要在 PHP 裡等待！
+$sql = "SELECT `id`, `word`, `part_of_speech`, `definition`, `phonetic` 
+        FROM `words` 
+        WHERE `id` > ? 
+        AND (`definition` = '' OR `definition` IS NULL OR `phonetic` = '' OR `phonetic` IS NULL)
+        ORDER BY `id` ASC 
+        LIMIT 50;"; // 🌟 每次只精準抓取 50 個需要連網的單字
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$last_word_id]);
+$all_words = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$total_tasks = count($all_words);
+echo "🎯 本批次偵測到需要聯網擷取的單字共：<strong>{$total_tasks}</strong> 個。<br><br>";
+
+if ($total_tasks == 0) {
+    echo "🎉 之後的所有單字都已補全完畢，或者本批次沒有需要更新的單字！";
+    exit;
+}
+
+echo "開始慢速安全擷取...<br><br><hr>";
+ob_flush();
+flush();
 
 $success_count = 0;
+$fail_count = 0;
 
-foreach ($words_to_fetch as $index => $word_data) {
-    $current_num = $index + 1;
-    $word_text = trim($word_data['word']); 
-    echo "[{$current_num}/" . count($words_to_fetch) . "] Fetching API for: '{$word_text}'... ";
-
-    // 每筆請求隨機等待 2 到 4 秒，模擬真人行為防鎖 IP
-    $sleep_time = rand(2000000, 4000000);
-    usleep($sleep_time);
-
-    $word_encoded = urlencode($word_text);
-    $api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/" . $word_encoded;
-
-    // 改用繞過 cURL 指紋的 Stream 流方法獲取 JSON
-    $api_response = fetchJsonWithStream($api_url);
-
-    if (empty($api_response)) {
-        echo "FAILED (API returned 403 or word not found).\n";
-        continue;
-    }
-
-    $eng_data = json_decode($api_response, true);
-    
-    // 檢查 API 回傳結構 (Dictionary API 第一層必定是陣列)
-    if (!is_array($eng_data) || empty($eng_data) || !isset($eng_data[0])) {
-        echo "FAILED (Invalid JSON structure).\n";
-        continue;
-    }
-
-    $main_data = $eng_data[0]; 
+// 4. 開始循環擷取（這裹面抓的每一筆都是確定需要連網的）
+foreach ($all_words as $word_data) {
+    $current_id = $word_data['id'];
+    $word = urlencode($word_data['word']);
     $need_update = false;
+    
+    // 連接 API
+    $eng_url = "https://api.dictionaryapi.dev/api/v2/entries/en/" . $word;
+    $options = array('http' => array('timeout' => 5, 'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'));
+    $context = stream_context_create($options);
+    $eng_response = @file_get_contents($eng_url, false, $context);
 
-    // 1. 提取正確音標
-    $fetched_phonetic = $main_data['phonetic'] ?? '';
-    if (empty($fetched_phonetic) && !empty($main_data['phonetics'])) {
-        foreach ($main_data['phonetics'] as $p) {
-            if (!empty($p['text'])) {
-                $fetched_phonetic = $p['text'];
-                break;
+    if ($eng_response !== false) {
+        $eng_data = json_decode($eng_response, true);
+        
+        $part_of_speech_map = [
+            1 => "noun", 2 => "verb", 3 => "adjective", 
+            4 => "adverb", 5 => "preposition", 6 => "conjunction"
+        ];
+        $target_part_of_speech = isset($part_of_speech_map[$word_data['part_of_speech']]) ? $part_of_speech_map[$word_data['part_of_speech']] : "";
+
+        // 精準詞性比對
+        if (!empty($target_part_of_speech) && isset($eng_data[0]['meanings'])) {
+            foreach ($eng_data[0]['meanings'] as $meaning) {
+                if (strtolower($meaning['partOfSpeech']) === $target_part_of_speech) {
+                    if (!empty($meaning['definitions'][0]['definition'])) {
+                        $word_data['definition'] = $meaning['definitions'][0]['definition'];
+                        $word_data['phonetic'] = isset($eng_data[0]['phonetic']) ? $eng_data[0]['phonetic'] : '';
+                        break;
+                    }
+                }
             }
         }
-    }
-    if (!empty($fetched_phonetic) && empty($word_data['phonetic'])) {
-        $word_data['phonetic'] = $fetched_phonetic;
-        $need_update = true;
-    }
+            
+        // 備用大眾定義
+        if (empty($word_data['definition']) && !empty($eng_data[0]['meanings'][0]['definitions'][0]['definition'])) {
+            $word_data['definition'] = $eng_data[0]['meanings'][0]['definitions'][0]['definition'];
+            $word_data['phonetic'] = isset($eng_data[0]['phonetic']) ? $eng_data[0]['phonetic'] : '';
+        }
 
-    // 2. 匹配詞性提取定義
-    $part_of_speech_map = [
-        1 => "noun", 2 => "verb", 3 => "adjective", 
-        4 => "adverb", 5 => "preposition", 6 => "conjunction"
-    ];
-    $target_part_of_speech = $part_of_speech_map[$word_data['part_of_speech']] ?? "";
-
-    if (!empty($target_part_of_speech) && isset($main_data['meanings'])) {
-        foreach ($main_data['meanings'] as $meaning) {
-            if (strtolower($meaning['partOfSpeech']) === $target_part_of_speech) {
-                if (!empty($meaning['definitions'][0]['definition']) && empty($word_data['definition'])) {
-                    $word_data['definition'] = $meaning['definitions'][0]['definition'];
-                    $need_update = true;
+        // 拿音檔
+        if (!empty($eng_data[0]['phonetics'])) {
+            foreach ($eng_data[0]['phonetics'] as $p) {
+                if (!empty($p['audio'])) {
+                    $word_data['audio_url'] = $p['audio'];
                     break;
                 }
             }
         }
-    }
-
-    // 3. 若詞性不匹配，保底使用第一個定義
-    if (empty($word_data['definition']) && !empty($main_data['meanings'][0]['definitions'][0]['definition'])) {
-        $word_data['definition'] = $main_data['meanings'][0]['definitions'][0]['definition'];
         $need_update = true;
     }
 
-    // 4. 提取發音音訊檔
-    if (!empty($main_data['phonetics'])) {
-        foreach ($main_data['phonetics'] as $p) {
-            if (!empty($p['audio']) && empty($word_data['audio_url'])) {
-                $word_data['audio_url'] = $p['audio'];
-                $need_update = true;
-                break;
-            }
-        }
-    }
-
-    // 【100% 安全更新】：完全不包含 translation 欄位，中文絕對安全
-    if ($need_update === true) {
+    // 5. 寫入單字資料，並即時更新進度表
+    if ($need_update === true && !empty($word_data['definition'])) {
         $update_sql = "UPDATE `words` SET `phonetic` = ?, `definition` = ?, `audio_url` = ? WHERE `id` = ?;";
         $update_stmt = $pdo->prepare($update_sql);
         $update_stmt->execute([
-            $word_data['phonetic'] ?? "",
-            $word_data['definition'] ?? "",
-            $word_data['audio_url'] ?? null,
-            $word_data['id']
+            $word_data['phonetic'] ?? "", 
+            $word_data['definition'] ?? "", 
+            $word_data['audio_url'] ?? "https://dictionaryapi.dev/" . $word, 
+            $current_id
         ]);
-        echo "SUCCESS (Database updated).\n";
         $success_count++;
+        echo "✅ [成功] 序號 {$current_id}: <strong>{$word_data['word']}</strong> 已連網補全。<br>";
     } else {
-        echo "SKIPPED (No new data field was updated).\n";
+        $fail_count++;
+        echo "❌ [失敗] 序號 {$current_id}: <strong>{$word_data['word']}</strong> API 查無此字。<br>";
     }
+
+    // 🌟 核心記憶功能：每跑完一個，不論成功或無資料，都記錄目前進度
+    $progress_sql = "UPDATE `fetch_progress` SET `last_word_id` = ? WHERE `id` = 1;";
+    $progress_stmt = $pdo->prepare($progress_sql);
+    $progress_stmt->execute([$current_id]);
+
+    // 🌟 核心等待功能：只有在真正發送完 API 後，才執行隨機 5 ~ 10 秒的防封鎖暫停
+    $sleep_seconds = rand(5, 10);
+    echo "<span style='color: #888;'>[安全機制] 已同步進度。隨機等待 {$sleep_seconds} 秒後執行下一個...</span><br><br>";
+    
+    ob_flush();
+    flush();
+    sleep($sleep_seconds);
 }
 
-echo "\n==================================================\n";
-echo "Batch Completed! Successfully updated {$success_count} words.\n";
-echo "==================================================\n";
-
-/**
- * 使用內建 Stream 機制獲取網頁（完全不經過 cURL 指紋驗證）
- */
-function fetchJsonWithStream($url) {
-    // 建立極擬真的瀏覽器上下文標頭
-    $options = [
-        'http' => [
-            'method' => 'GET',
-            'header' => "Accept: application/json\r\n" .
-                        "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\r\n" .
-                        "Accept-Language: zh-TW,zh;q=0.9,en-US;q=0.8\r\n" .
-                        "Connection: close\r\n",
-            'timeout' => 8,
-            'ignore_errors' => true // 允許讀取非 200 的伺服器錯誤回傳
-        ],
-        'ssl' => [
-            'verify_peer' => false, // 忽略 Windows 本地端憑證缺失問題
-            'verify_peer_name' => false
-        ]
-    ];
-    
-    $context = stream_context_create($options);
-    $response = @file_get_contents($url, false, $context);
-    
-    // 檢查 HTTP 回傳狀態碼是否為 200
-    if (isset($http_response_header)) {
-        foreach ($http_response_header as $header) {
-            if (strpos($header, 'HTTP/') === 0) {
-                // 如果回傳包含 200 OK 以外的錯誤碼則放棄
-                if (strpos($header, '200') === false) {
-                    return null;
-                }
-                break;
-            }
-        }
-    }
-    
-    return $response !== false ? $response : null;
-}
+echo "<hr><h3>🏁 本批次 50 個單字擷取任務已結束！</h3>";
+echo "成功補全: {$success_count} 筆，失敗: {$fail_count} 筆。<br>";
+echo "💡 想要繼續抓下 50 個，只要「重新整理網頁（F5）」即可！";
+?>
