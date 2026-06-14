@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>隨機英文單字卡</title>
+    <title>英文單字卡</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <header></header>
+    <?php include_once "./header.php";?>
     <main>
-        <iframe src="./vocabulary.php" frameborder="0"></iframe>
+        <?php include_once "./vocabulary.php";?>
     </main>
-    <footer></footer>
+    <?php include_once "./footer.php";?>
 </body>
 </html>

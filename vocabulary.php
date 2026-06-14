@@ -291,7 +291,7 @@ if((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action
     }
 </style>
 
-<!-- <button onclick="myFetch()">automatically fetch vocabulary</button> -->
+<a href="./batch_fetch.php" style="position: fixed; right: 0; bottom: 10px; width: 240px; height: 120px; font-size: 3rem;">prefetch</a>
 
 <div class="container">
     <div class="card-board" id="card-board" onclick="flipCard(event)">
