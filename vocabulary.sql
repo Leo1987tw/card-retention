@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.0.1
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- 主機： sql206.infinityfree.com
--- 產生時間： 2026 年 07 月 02 日 10:47
--- 伺服器版本： 11.4.12-MariaDB
--- PHP 版本： 7.2.22
+-- 主機： 127.0.0.1
+-- 產生時間： 2026-07-27 19:59:26
+-- 伺服器版本： 10.4.32-MariaDB
+-- PHP 版本： 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -19,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫： `if0_42000877_vocabulary`
+-- 資料庫： `vocabulary`
 --
 
 -- --------------------------------------------------------
@@ -29,9 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `fetch_progress` (
-  `id` int(11) NOT NULL,
-  `last_word_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+  `id` int(11) UNSIGNED NOT NULL,
+  `last_word_id` int(11) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- 傾印資料表的資料 `fetch_progress`
@@ -47,7 +46,7 @@ INSERT INTO `fetch_progress` (`id`, `last_word_id`) VALUES
 --
 
 CREATE TABLE `learners` (
-  `id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -65,11 +64,11 @@ INSERT INTO `learners` (`id`, `name`) VALUES
 --
 
 CREATE TABLE `learning_records` (
-  `id` int(11) NOT NULL,
-  `learner_id` int(11) NOT NULL,
-  `word_id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
+  `learner_id` int(11) UNSIGNED NOT NULL,
+  `word_id` int(11) UNSIGNED NOT NULL,
   `is_new_word` tinyint(1) NOT NULL DEFAULT 1,
-  `preview_count` int(11) NOT NULL DEFAULT 0,
+  `preview_count` int(11) UNSIGNED NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `last_review_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -81,7 +80,7 @@ CREATE TABLE `learning_records` (
 --
 
 CREATE TABLE `parts_of_speech` (
-  `id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `code` varchar(20) NOT NULL,
   `display_name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -105,7 +104,7 @@ INSERT INTO `parts_of_speech` (`id`, `code`, `display_name`) VALUES
 --
 
 CREATE TABLE `sources` (
-  `id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `url` varchar(2048) NOT NULL,
   `descript` varchar(2048) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -5833,14 +5832,14 @@ INSERT INTO `universal_import` (`line_text`) VALUES
 --
 
 CREATE TABLE `words` (
-  `id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `word` varchar(255) NOT NULL,
-  `part_of_speech` int(11) NOT NULL,
+  `part_of_speech` int(11) UNSIGNED NOT NULL,
   `phonetic` varchar(255) NOT NULL,
   `definition` text NOT NULL,
   `translation` text NOT NULL,
   `audio_url` varchar(2048) DEFAULT NULL,
-  `source` int(11) DEFAULT NULL,
+  `source` int(11) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -12509,8 +12508,8 @@ ALTER TABLE `learners`
 --
 ALTER TABLE `learning_records`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_learning_records_learner_id_learners_id` (`learner_id`) USING BTREE,
-  ADD KEY `fk_learning_records_word_id_words_id` (`word_id`) USING BTREE;
+  ADD KEY `fk_learning_records_learner_id_learners_id` (`learner_id`),
+  ADD KEY `fk_learning_records_word_id_words_id` (`word_id`);
 
 --
 -- 資料表索引 `parts_of_speech`
@@ -12540,25 +12539,25 @@ ALTER TABLE `words`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `learners`
 --
 ALTER TABLE `learners`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `parts_of_speech`
 --
 ALTER TABLE `parts_of_speech`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `sources`
 --
 ALTER TABLE `sources`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `words`
 --
 ALTER TABLE `words`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6612;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6612;
 
 --
 -- 已傾印資料表的限制式
@@ -12568,15 +12567,15 @@ ALTER TABLE `words`
 -- 資料表的限制式 `learning_records`
 --
 ALTER TABLE `learning_records`
-  ADD CONSTRAINT `fk_learning_records_learner_id_learners_id` FOREIGN KEY (`learner_id`) REFERENCES `learners` (`id`),
-  ADD CONSTRAINT `fk_learning_records_word_id_words_id` FOREIGN KEY (`word_id`) REFERENCES `words` (`id`);
+  ADD CONSTRAINT `fk_learning_records_learner_id_learners_id` FOREIGN KEY (`learner_id`) REFERENCES `learners` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_learning_records_word_id_words_id` FOREIGN KEY (`word_id`) REFERENCES `words` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- 資料表的限制式 `words`
 --
 ALTER TABLE `words`
-  ADD CONSTRAINT `fk_words_part_of_speech_parts_of_speech_id` FOREIGN KEY (`part_of_speech`) REFERENCES `parts_of_speech` (`id`),
-  ADD CONSTRAINT `fk_words_source_sources_id` FOREIGN KEY (`source`) REFERENCES `sources` (`id`);
+  ADD CONSTRAINT `fk_words_part_of_speech_parts_of_speech_id` FOREIGN KEY (`part_of_speech`) REFERENCES `parts_of_speech` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_words_source_sources_id` FOREIGN KEY (`source`) REFERENCES `sources` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
