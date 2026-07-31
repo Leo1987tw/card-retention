@@ -5,7 +5,7 @@ if(session_status() === PHP_SESSION_NONE){
 }
 
 try{
-    $config = require_once __DIR__ . "/../../db_config/calendar/db_config.php";
+    $config = require_once __DIR__ . "/../db_config/vocabulary/db_config.php";
     $dsn = "mysql:host={$config['host']}; charset=utf8; dbname={$config['dbname']};";
     $pdo = new PDO($dsn, $config['username'], $config['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 }catch(Exception $exception){
