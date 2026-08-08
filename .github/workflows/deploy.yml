@@ -25,5 +25,5 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./deploy_temp/htdocs/
-        server-dir: ./htdocs/
+        local-dir: ./deploy_temp/htdocs/english-learning/
+        server-dir: ./htdocs/english-learning/
