@@ -4,7 +4,7 @@ header('Content-Type: text/html; charset=utf-8;');
 
 try {
     $config = require_once 'db_config.php';
-    $dsn = "mysql:host={$config['host']}; charset=utf8; dbname={$config['dbname']};";
+    $dsn = "mysql:host={$config['host']}; charset=utf8; dbname={$config['database']};";
     $pdo = new PDO($dsn, $config['username'], $config['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 } catch (Exception $exception) {
     echo "資料庫連線失敗: " . $exception->getMessage();
