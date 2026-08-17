@@ -55,7 +55,7 @@
         align-items: center;
         background-color: pink;
     }
-    
+
     .back {
         display: flex;
         flex-direction: column;
@@ -163,15 +163,15 @@
     let degree = 0;
     let currentAudioUrl = "";
 
-    function flipCard(event){
+    function flipCard(event) {
         card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
 
         const rectangle = card.getBoundingClientRect();
         const clickPosition = event.clientX - rectangle.left - rectangle.width / 2;
 
-        if(clickPosition >= 0){
+        if (clickPosition >= 0) {
             degree += 180;
-        }else {
+        } else {
             degree -= 180;
         }
 
@@ -185,14 +185,14 @@
         card.style.transform = `rotateY(${degree}deg)`;
     });
 
-    function drawCard(){
+    function drawCard() {
         card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
 
         degree = 0;
         card.style.transform = `rotateY(${degree}deg)`;
 
         fetch('api.php?action=draw').then(response => response.json()).then(data => {
-            if(data.status === 'success'){
+            if (data.status === 'success') {
                 document.getElementById('word').innerText = data.word;
                 document.getElementById('part-of-speech').innerText = data.part_of_speech;
                 document.getElementById('phonetic').innerText = data.phonetic;
@@ -200,7 +200,7 @@
                 document.getElementById('translation').innerText = data.translation;
 
                 currentAudioUrl = data.audio;
-            }else {
+            } else {
                 document.getElementById('word').innerText = "draw fail.";
             }
         }).catch(error => {
@@ -209,14 +209,14 @@
         });
     };
 
-    function shuffleCard(){
+    function shuffleCard() {
         card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
 
         degree = 0;
         card.style.transform = `rotateY(${degree}deg)`;
 
         fetch('api.php?action=shuffle').then(response => response.json()).then(data => {
-            if(data.status === 'success'){
+            if (data.status === 'success') {
                 document.getElementById('word').innerText = data.word;
                 document.getElementById('part-of-speech').innerText = data.part_of_speech;
                 document.getElementById('phonetic').innerText = data.phonetic;
@@ -224,7 +224,7 @@
                 document.getElementById('translation').innerText = data.translation;
 
                 currentAudioUrl = data.audio;
-            }else {
+            } else {
                 document.getElementById('word').innerText = "draw fail.";
             }
         }).catch(error => {
@@ -233,17 +233,17 @@
         });
     };
 
-    function playAudio(event){
+    function playAudio(event) {
         event.stopPropagation();
-        if(currentAudioUrl){
-            if(currentAudioUrl.includes('.mp3')){
+        if (currentAudioUrl) {
+            if (currentAudioUrl.includes('.mp3')) {
                 const audio = new Audio(currentAudioUrl);
                 audio.play();
-            }else {
+            } else {
                 fetch(currentAudioUrl).then(response => response.json()).then(data => {
-                    if(data[0]?.phonetics?.[0]?.audio){
+                    if (data[0]?.phonetics?.[0]?.audio) {
                         new Audio(data[0].phonetics[0].audio).play();
-                    }else {
+                    } else {
                         alert("this word does not have phonetic data");
                     }
                 });

@@ -34,7 +34,7 @@ $sql = "SELECT `id`, `word`, `part_of_speech`, `definition`, `phonetic`
         WHERE `id` > ? 
         AND (`definition` = '' OR `definition` IS NULL OR `phonetic` = '' OR `phonetic` IS NULL)
         ORDER BY `id` ASC 
-        LIMIT 1;"; 
+        LIMIT 1;";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$last_word_id]);
@@ -58,10 +58,14 @@ $eng_response = @file_get_contents($eng_url, false, $context);
 
 if ($eng_response !== false) {
     $eng_data = json_decode($eng_response, true);
-    
+
     $part_of_speech_map = [
-        1 => "noun", 2 => "verb", 3 => "adjective", 
-        4 => "adverb", 5 => "preposition", 6 => "conjunction"
+        1 => "noun",
+        2 => "verb",
+        3 => "adjective",
+        4 => "adverb",
+        5 => "preposition",
+        6 => "conjunction"
     ];
     $target_part_of_speech = isset($part_of_speech_map[$word_data['part_of_speech']]) ? $part_of_speech_map[$word_data['part_of_speech']] : "";
 
@@ -77,7 +81,7 @@ if ($eng_response !== false) {
             }
         }
     }
-        
+
     // 備用大眾定義
     if (empty($word_data['definition']) && !empty($eng_data[0]['meanings'][0]['definitions'][0]['definition'])) {
         $word_data['definition'] = $eng_data[0]['meanings'][0]['definitions'][0]['definition'];
@@ -101,9 +105,9 @@ if ($need_update === true && !empty($word_data['definition'])) {
     $update_sql = "UPDATE `words` SET `phonetic` = ?, `definition` = ?, `audio_url` = ? WHERE `id` = ?;";
     $update_stmt = $pdo->prepare($update_sql);
     $update_stmt->execute([
-        $word_data['phonetic'] ?? "", 
-        $word_data['definition'] ?? "", 
-        $word_data['audio_url'] ?? "https://dictionaryapi.dev/" . $word, 
+        $word_data['phonetic'] ?? "",
+        $word_data['definition'] ?? "",
+        $word_data['audio_url'] ?? "https://dictionaryapi.dev/" . $word,
         $current_id
     ]);
     echo "<div style='color: green; font-size: 16px;'>✅ [成功] 序號 {$current_id}: <strong>{$word_data['word']}</strong> 已連網補全。</div>";
@@ -132,17 +136,17 @@ $sleep_seconds = rand(8, 15);
 </div>
 
 <script>
-let timeLeft = <?php echo $sleep_seconds; ?>;
-const timerDisplay = document.getElementById('timer');
+    let timeLeft = <?php echo $sleep_seconds; ?>;
+    const timerDisplay = document.getElementById('timer');
 
-const countdown = setInterval(function() {
-    timeLeft--;
-    timerDisplay.textContent = timeLeft;
-    
-    if (timeLeft <= 0) {
-        clearInterval(countdown);
-        // 倒數結束，自動重新整理網頁執行下一個單字
-        location.reload();
-    }
-}, 1000);
+    const countdown = setInterval(function() {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            // 倒數結束，自動重新整理網頁執行下一個單字
+            location.reload();
+        }
+    }, 1000);
 </script>
