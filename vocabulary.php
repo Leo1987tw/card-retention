@@ -225,9 +225,7 @@
 
                 currentAudioUrl = data.audio;
             } else {
-                response.text().then(rawText => {
-    document.getElementById('word').innerText = rawText;
-});
+                document.getElementById('word').innerText = "draw fail.";
             }
         }).catch(error => {
             console.error("error", error);
