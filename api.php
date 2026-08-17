@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 try {
     $config = require __DIR__ . "/../db_config/vocabulary/db_config.php";
-    $dsn = "{$config['driver']}:host={$config['host']}; dbname={$config['database']};";
+    $dsn = "{$config['driver']}:host={$config['host']}; dbname={$config['database']}";
 
     if ($config['driver'] == "mysql") {
         $dsn .= "; charset=utf8";
