@@ -9,7 +9,7 @@ try {
     $dsn = "{$config['driver']}:host={$config['host']}; dbname={$config['database']};";
 
     if ($config['driver'] == "mysql") {
-        $this->dsn .= "; charset=utf8mb4";
+        $dsn .= "; charset=utf8";
     }
 
     $pdo = new PDO($dsn, $config['username'], $config['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
