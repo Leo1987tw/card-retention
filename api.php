@@ -21,14 +21,17 @@ try {
     exit;
 }
 
+$table = isset($_GET['set']) ? preg_replace('/[^a-zA-Z0-9_]/', '', $_GET['set']) : 'words';
+
+// 洗牌
 if (isset($_GET['action']) && $_GET['action'] == 'shuffle') {
-    if (isset($_POST['learner'])) {
-        $sql = "SELECT `word_id` FROM `learning_records` WHERE `learner_id`= ? AND `is_learned`='0';";
+    if (isset($_SESSION['username'])) {
+        $sql = "SELECT `id` FROM `$table` WHERE `id` NOT IN (SELECT `word_id` FROM `learning_record` WHERE `learner_id`= ? AND `is_learned`='1');";
         $statement = $pdo->prepare($sql);
-        $statement->execute([$_POST['learner']]);
+        $statement->execute([$_SESSION['username']]);
         $queue = $statement->fetchAll(PDO::FETCH_COLUMN);
     } else {
-        $sql = "SELECT `id` FROM `words`";
+        $sql = "SELECT `id` FROM `$table`";
         $queue = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
     }
 
@@ -36,17 +39,19 @@ if (isset($_GET['action']) && $_GET['action'] == 'shuffle') {
     $_SESSION['word_queue'] = $queue;
 }
 
+// 抽牌
 if ((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action']) && $_GET['action'] == 'shuffle')) {
     header('Content-Type: application/json; charset=utf8;');
 
-    if (!isset($_SESSION['word_queue']) || empty($_SESSION['word_queue'])) {
-        if (isset($_POST['learner'])) {
-            $sql = "SELECT `word_id` FROM `learning_records` WHERE `learner_id`= ? AND `is_learned`='0';";
+    // 當牌堆沒牌時進行洗牌
+    if (!isset($_SESSION['word_queue'])) {
+        if (isset($_SESSION['username'])) {
+            $sql = "SELECT `id` FROM `$table` WHERE `id` NOT IN (SELECT `word_id` FROM `learning_record` WHERE `learner_id`= ? AND `is_learned`='1');";
             $statement = $pdo->prepare($sql);
-            $statement->execute([$_POST['learner']]);
+            $statement->execute([$_SESSION['username']]);
             $queue = $statement->fetchAll(PDO::FETCH_COLUMN);
         } else {
-            $sql = "SELECT `id` FROM `words`";
+            $sql = "SELECT `id` FROM `$table`";
             $queue = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
         }
 
@@ -61,7 +66,7 @@ if ((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['actio
 
     $draw_word_id = array_shift($_SESSION['word_queue']);
 
-    $sql = "SELECT * FROM `words` WHERE `id`= ?";
+    $sql = "SELECT * FROM `$table` WHERE `id`= ?";
     $statement = $pdo->prepare($sql);
     $statement->execute([$draw_word_id]);
     $word_data = $statement->fetch(PDO::FETCH_ASSOC);
@@ -157,6 +162,86 @@ if ((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['actio
         "translation" => $word_data['translation'] ? $word_data['translation'] : "",
         "audio" => $word_data['audio_url'] ? $word_data['audio_url'] : ""
     ], JSON_UNESCAPED_UNICODE);
+
+    exit;
+}
+
+// 確認已經學習過的牌卡
+if(isset($_GET['action']) && $_GET['action'] == 'learned'){
+    header('Content-Type: application/json; charset=utf8;');
+
+    if(!isset($_SESSION['username'])){
+        echo json_encode(['status' => 'error', 'message' => 'please login first']);
+        exit;
+    }
+
+    $word_id = intval($_GET['id'] ?? 0);
+    if($word_id <= 0){
+        echo json_encode(['status' => 'error', 'message' => 'fail word id']);
+        exit;
+    }
+
+    $sql = "INSERT INTO `learning_record`(`learner_id`, `word_id`, `is_learned`) VALUES (?, ?, '1') ON DUPLICATE KEY UPDATE `is_learned` = '1';";
+
+    $statement = $pdo->prepare($sql);
+    $success = $statement->execute([$_SESSION['username'], $word_id]);
+
+    if($success){
+        if(isset($_SESSION['word_queue']) && is_array($_SESSION['word_queue'])){
+            $_SESSION['word_queue'] = array_values(array_diff($_SESSION['word_queue'], [$word_id]));
+        }
+
+        echo json_encode(['status' => 'success', 'message' => 'you have learned this word.']);
+    }else {
+        echo json_encode(['status' => 'error', 'message' => 'learning_record update fail.']);
+    }
+
+    exit;
+}
+
+// 取消已經學習過的牌卡
+if(isset($_GET['action']) && $_GET['action'] == 'forgot'){
+    header('Content-Type: application/json; charset=utf8;');
+
+    if(!isset($_SESSION['username'])){
+        echo json_encode(['status' => 'error', 'message' => 'please login first']);
+        exit;
+    }
+
+    $word_id = intval($_GET['id'] ?? 0);
+    if($word_id <= 0){
+        echo json_encode(['status' => 'error', 'message' => 'fail word id']);
+        exit;
+    }
+
+    $sql = "SELECT `id` FROM `learning_record` WHERE `learner_id`= ? AND `word_id`= ?;";
+    $statement = $pdo->prepare($sql);
+    $statement->execute([$_SESSION['username'], $word_id]);
+    $has_record = $statement->fetch();
+
+    if($has_record){
+        $sql = "UPDATE `learning_record` SET `is_learned`='0' WHERE `learner_id`= ? AND `word_id`= ?;";
+
+        $statement = $pdo->prepare($sql);
+        $success = $statement->execute([$_SESSION['username'], $word_id]);
+    }else {
+        $sql = "INSERT INTO `learning_record`(`learner_id`, `word_id`, `is_learned`) VALUES (?, ?, '0');";
+
+        $statement = $pdo->prepare($sql);
+        $success = $statement->execute([$_SESSION['username'], $word_id]);
+    }
+    
+    if($success){
+        if(isset($_SESSION['word_queue']) && is_array($_SESSION['word_queue'])){
+            if(!in_array($word_id, $_SESSION['word_queue'])){
+                $_SESSION['word_queue'][] = $word_id;
+            }
+        }
+
+        echo json_encode(['status' => 'success', 'message' => 'you have forgetten this word.']);
+    }else {
+        echo json_encode(['status' => 'error', 'message' => 'learning_record update fail.']);
+    }
 
     exit;
 }
