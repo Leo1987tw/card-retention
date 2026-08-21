@@ -26,11 +26,3 @@
         <button id="drawCard" onclick="drawCard()">抽牌</button>
     </div>
 </div>
-
-<div>
-    <select name="vocabulary-category" id="vocabulary-category" onchange="changeVocabularySet(this.value)">
-        <option value="vocabulary">english vocabulary</option>
-        <option value="html">html</option>
-        <option value="css">css</option>
-    </select>
-</div>

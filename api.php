@@ -238,7 +238,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'forgot'){
             }
         }
 
-        echo json_encode(['status' => 'success', 'message' => 'you have forgetten this word.']);
+        echo json_encode(['status' => 'success', 'message' => 'you have forgotten this word.']);
     }else {
         echo json_encode(['status' => 'error', 'message' => 'learning_record update fail.']);
     }

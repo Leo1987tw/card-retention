@@ -3,7 +3,7 @@ const card = document.getElementById('card');
 let degree = 0;
 let currentAudioUrl = "";
 
-let set = "vocabulary";
+let set = "words";
 let currentId = -1;
 
 window.onload = () => {
@@ -123,7 +123,7 @@ function changeVocabularySet(newSet) {
 function clickCheckbox(event){
     event.stopPropagation();
 
-    const label = document.getElementById('learned-checkbox');
+    const label = document.getElementById('card-checkbox-container');
 
     if(label){
         label.classList.toggle('checked');
@@ -133,12 +133,6 @@ function clickCheckbox(event){
         }else {
             cancelIsLearned(event);
         }
-    }
-
-    
-
-    if(label.classList.contains('checked')){
-        isLearned(event);
     }
 }
 
@@ -167,7 +161,7 @@ function isLearned(event){
 }
 
 // 取消勾選已學會的牌卡
-function isLearned(event){
+function cancelIsLearned(event){
     if(currentId < 0){
         alert("have not choose a card.");
         return;

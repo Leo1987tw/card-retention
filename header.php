@@ -1,6 +1,11 @@
 <header>
     <div class="left">
         <a href="./index.php">home</a>
+        <select name="vocabulary-category" id="vocabulary-category" onchange="changeVocabularySet(this.value)">
+            <option value="words">words</option>
+            <option value="html">html</option>
+            <option value="css">css</option>
+        </select>
     </div>
 
     <div class="right">
@@ -14,5 +19,6 @@
         }
 
         ?>
+        <a href="./back.php">console</a>
     </div>
 </header>

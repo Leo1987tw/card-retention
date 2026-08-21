@@ -69,15 +69,18 @@ a {
     align-items: center;
 }
 
-.left>a {
+.left>a, .left select {
+    float: left;
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
     width: 150px;
     height: 60px;
     margin: 10px;
     background-color: blueviolet;
     color: white;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 2rem;
     text-decoration: none;
     border: 1px solid black;
@@ -85,6 +88,7 @@ a {
 }
 
 .right>a {
+    float: right;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -93,6 +97,7 @@ a {
     margin: 10px;
     background-color: blueviolet;
     color: white;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 2rem;
     text-decoration: none;
     border: 1px solid black;
