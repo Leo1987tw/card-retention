@@ -1,3 +1,9 @@
+<?php
+
+include_once "./api/db.php";
+
+?>
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 
@@ -5,14 +11,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>英文單字卡</title>
-    <link rel="stylesheet" href="./style.css">
-    <script src="./script.js" defer></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="./js/script.js" defer></script>
 </head>
 
 <body>
     <?php include_once "./header.php"; ?>
     <main>
-        <?php include_once "./vocabulary.php"; ?>
+        <?php
+        
+        $do = $_GET['do'] ?? 'main';
+        $file = "./front/$do.php";
+
+        if(file_exists($file)){
+            include_once $file;
+        }else {
+            include_once "./front/main.php";
+        }
+        
+        ?>
     </main>
     <?php include_once "./footer.php"; ?>
 </body>
