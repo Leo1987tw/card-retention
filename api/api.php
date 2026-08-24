@@ -1,247 +1,222 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+include_once "./db.php"; 
+header('Content-Type: application/json; charset=utf-8');
+
+$response = ['status' => 'error', 'message' => '未知錯誤'];
+
+/* =========================================================================
+   [前端參數安全擷取與動態排堆路由] 
+   ========================================================================= */
+$do        = isset($_GET['do'])        ? trim($_GET['do']) : 'card_board'; 
+$id        = isset($_GET['id'])        ? intval($_GET['id']) : 0;
+$isCorrect = isset($_GET['isCorrect']) ? $_GET['isCorrect'] : null;
+$mode      = isset($_GET['mode'])      ? trim($_GET['mode']) : ''; 
+
+// 智慧別名路由表：對應不同的 ?do= 指派正確的底層主資料表名稱、快取鍵名與專屬 DB 物件
+$route_map = [
+    'card_board' => ['table' => 'words',      'key' => 'words', 'db' => $Word],
+    'html'       => ['table' => 'html_terms', 'key' => 'html',  'db' => $HTML],
+    'css'        => ['table' => 'css_terms',  'key' => 'css',   'db' => $CSS]
+];
+
+if (array_key_exists($do, $route_map)) {
+    $table  = $route_map[$do]['table'];
+    $setKey = $route_map[$do]['key'];
+    $currentDB = $route_map[$do]['db']; // 當前作用中的排堆 DB 物件
+} else {
+    // 安全防線
+    $table  = preg_replace('/[^a-zA-Z0-9_]/', '', $do);
+    $setKey = $do;
+    $currentDB = new DB($table);
 }
 
-try {
-    $config = require __DIR__ . "/../db_config/vocabulary/db_config.php";
-    $dsn = "{$config['driver']}:host={$config['host']}; dbname={$config['database']}";
+// 判斷使用者是否登入（對接您的 $_SESSION['username']）
+$isLoggedIn = isset($_SESSION['username']);
+$learner_id = 0;
 
-    if ($config['driver'] == "mysql") {
-        $dsn .= "; charset=utf8";
-    }
-
-    $pdo = new PDO($dsn, $config['username'], $config['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-} catch (Exception $exception) {
-    echo json_encode([
-        "status" => "error",
-        "message" => $exception->getMessage()
-    ]);
-    exit;
+if ($isLoggedIn) {
+    // 直接調用 $Learner 物件的 find 方法查詢使用者流水號 ID
+    $user = $Learner->find(['username' => $_SESSION['username']]);
+    $learner_id = $user ? intval($user['id']) : 0;
 }
 
-$table = isset($_GET['set']) ? preg_replace('/[^a-zA-Z0-9_]/', '', $_GET['set']) : 'words';
+/* =========================================================================
+   第一部分：儲存作答進度 (活用 $LearningRecord->find 與 save 方法)
+   ========================================================================= */
+if ($isLoggedIn && $learner_id > 0 && $id > 0 && $isCorrect !== null && $mode !== 'pool_rand') {
+    
+    // 活用 DB 類別查詢現有紀錄
+    $record = $LearningRecord->find(['learner_id' => $learner_id, 'word_id' => $id, 'type' => $do]);
 
-// 洗牌
-if (isset($_GET['action']) && $_GET['action'] == 'shuffle') {
-    if (isset($_SESSION['username'])) {
-        $sql = "SELECT `id` FROM `$table` WHERE `id` NOT IN (SELECT `word_id` FROM `learning_record` WHERE `learner_id`= ? AND `is_learned`='1');";
-        $statement = $pdo->prepare($sql);
-        $statement->execute([$_SESSION['username']]);
-        $queue = $statement->fetchAll(PDO::FETCH_COLUMN);
-    } else {
-        $sql = "SELECT `id` FROM `$table`";
-        $queue = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
-    }
-
-    shuffle($queue);
-    $_SESSION['word_queue'] = $queue;
-}
-
-// 抽牌
-if ((isset($_GET['action']) && $_GET['action'] == 'draw') || (isset($_GET['action']) && $_GET['action'] == 'shuffle')) {
-    header('Content-Type: application/json; charset=utf8;');
-
-    // 當牌堆沒牌時進行洗牌
-    if (!isset($_SESSION['word_queue'])) {
-        if (isset($_SESSION['username'])) {
-            $sql = "SELECT `id` FROM `$table` WHERE `id` NOT IN (SELECT `word_id` FROM `learning_record` WHERE `learner_id`= ? AND `is_learned`='1');";
-            $statement = $pdo->prepare($sql);
-            $statement->execute([$_SESSION['username']]);
-            $queue = $statement->fetchAll(PDO::FETCH_COLUMN);
+    if ($isCorrect === 'true') {
+        // 【答對了】
+        if ($record) {
+            $new_level = min(5, intval($record['learning_level']) + 1); // 記憶等級最高限制到 5
+            $new_preview_count = intval($record['preview_count']) + 1;
         } else {
-            $sql = "SELECT `id` FROM `$table`";
-            $queue = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+            $new_level = 2; // 全新卡片第一次答對直升 LV 2
+            $new_preview_count = 1;
         }
-
-        shuffle($queue);
-        $_SESSION['word_queue'] = $queue;
+    } else {
+        // 【答錯了】打回原形 LV 1
+        $new_level = 1;
+        $new_preview_count = 1; 
     }
 
-    if (empty($_SESSION['word_queue'])) {
-        echo json_encode(["status" => "empty", "message" => "好棒棒，你把單字都學完了！"], JSON_UNESCAPED_UNICODE);
-        exit;
+    // 依據記憶等級推算下一次複習日期
+    switch ($new_level) {
+        case 1:  $days = '+1 day';   break;
+        case 2:  $days = '+3 days';  break;
+        case 3:  $days = '+7 days';  break;
+        case 4:  $days = '+14 days'; break;
+        case 5:  $days = '+30 days'; break;
+        default: $days = '+1 day';   break;
     }
+    $next_review_date = date('Y-m-d', strtotime($days));
 
-    $draw_word_id = array_shift($_SESSION['word_queue']);
-
-    $sql = "SELECT * FROM `$table` WHERE `id`= ?";
-    $statement = $pdo->prepare($sql);
-    $statement->execute([$draw_word_id]);
-    $word_data = $statement->fetch(PDO::FETCH_ASSOC);
-
-    if (!$word_data) {
-        echo json_encode(["status" => "error", "message" => "資料庫裡沒有這個單字"], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    $word = urlencode($word_data['word']);
-    $need_update = false;
-
-    if (empty($word_data['phonetic']) || empty($word_data['definition'])) {
-        $eng_url = "https://api.dictionaryapi.dev/api/v2/entries/en/" . $word;
-        $options = array('http' => array('timeout' => 3, 'user_agent' => 'Mozilla/5.0'));
-        $context = stream_context_create($options);
-        $eng_response = @file_get_contents($eng_url, false, $context);
-
-        if ($eng_response !== false) {
-            $eng_data = json_decode($eng_response, true);
-            $part_of_speech_map = [
-                1 => "noun",
-                2 => "verb",
-                3 => "adjective",
-                4 => "adverb",
-                5 => "preposition",
-                6 => "conjunction"
-            ];
-            $target_part_of_speech = isset($part_of_speech_map[$word_data['part_of_speech']]) ? $part_of_speech_map[$word_data['part_of_speech']] : "";
-
-            if (!empty($target_part_of_speech) && isset($eng_data[0]['meanings'])) {
-                foreach ($eng_data[0]['meanings'] as $meaning) {
-                    if (strtolower($meaning['partOfSpeech']) === $target_part_of_speech) {
-                        if (!empty($meaning['definitions'][0]['definition'])) {
-                            $word_data['definition'] = $meaning['definitions'][0]['definition'];
-                            $word_data['phonetic'] = isset($eng_data[0]['phonetic']) ? $eng_data[0]['phonetic'] : '';
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (empty($word_data['definition']) && !empty($eng_data[0]['meanings'][0]['definitions'][0]['definition'])) {
-                $word_data['definition'] = $eng_data[0]['meanings'][0]['definitions'][0]['definition'];
-                $word_data['phonetic'] = isset($eng_data[0]['phonetic']) ? $eng_data[0]['phonetic'] : '';
-            }
-
-            if (!empty($eng_data[0]['phonetics'])) {
-                foreach ($eng_data[0]['phonetics'] as $p) {
-                    if (!empty($p['audio'])) {
-                        $word_data['audio_url'] = $p['audio'];
-                        break;
-                    }
-                }
-            }
-            $need_update = true;
-        }
-    }
-
-    if ($need_update === true) {
-        $sql = "UPDATE `words` SET `phonetic` = ?, `definition` = ?, `translation` = ?, `audio_url` = ? WHERE `id` = ?;";
-        $statement = $pdo->prepare($sql);
-        $statement->execute([
-
-            $word_data['phonetic'] ?? "",
-            $word_data['definition'] ?? "",
-            $word_data['translation'] ?? "",
-            $word_data['audio_url'] ?? "",
-            $word_data['id']
-        ]);
-    }
-
-    if (!isset($word_data['audio_url'])) {
-        $word_data['audio_url'] = "https://dictionaryapi.dev/" . $word;
-    }
-
-    $part_of_speech_map = [
-        1 => 'noun',
-        2 => 'verb',
-        3 => 'adjective',
-        4 => 'adverb',
-        5 => 'preposition',
-        6 => 'conjunction',
-        7 => 'proper noun'
+    // 封裝準備寫入/更新的關聯陣列
+    $save_data = [
+        'learner_id'     => $learner_id,
+        'word_id'        => $id,
+        'type'           => $do,
+        'learning_level' => $new_level,
+        'preview_count'  => $new_preview_count,
+        'last_review_at' => date('Y-m-d H:i:s'),
+        'next_review_date'=> $next_review_date
     ];
 
-    echo json_encode([
-        "status" => "success",
-        "word" => $word_data['word'],
-        "part_of_speech" => isset($word_data['part_of_speech']) ? $part_of_speech_map[$word_data['part_of_speech']] : "",
-        "phonetic" => $word_data['phonetic'] ? $word_data['phonetic'] : "",
-        "definition" => $word_data['definition'] ? $word_data['definition'] : "",
-        "translation" => $word_data['translation'] ? $word_data['translation'] : "",
-        "audio" => $word_data['audio_url'] ? $word_data['audio_url'] : ""
-    ], JSON_UNESCAPED_UNICODE);
-
-    exit;
-}
-
-// 確認已經學習過的牌卡
-if(isset($_GET['action']) && $_GET['action'] == 'learned'){
-    header('Content-Type: application/json; charset=utf8;');
-
-    if(!isset($_SESSION['username'])){
-        echo json_encode(['status' => 'error', 'message' => 'please login first']);
-        exit;
+    if ($record) {
+        // 帶有 id 的陣列傳給 save() ➔ 自動執行物件內部的 UPDATE 語法
+        $save_data['id'] = $record['id'];
+    } else {
+        // 沒有 id 的陣列傳給 save() ➔ 自動執行物件內部的 INSERT 語法
+        $save_data['is_new_word'] = 1;
+        $save_data['created_at']  = date('Y-m-d H:i:s');
     }
 
-    $word_id = intval($_GET['id'] ?? 0);
-    if($word_id <= 0){
-        echo json_encode(['status' => 'error', 'message' => 'fail word id']);
-        exit;
-    }
+    // 執行儲存
+    $LearningRecord->save($save_data);
 
-    $sql = "INSERT INTO `learning_record`(`learner_id`, `word_id`, `is_learned`) VALUES (?, ?, '1') ON DUPLICATE KEY UPDATE `is_learned` = '1';";
-
-    $statement = $pdo->prepare($sql);
-    $success = $statement->execute([$_SESSION['username'], $word_id]);
-
-    if($success){
-        if(isset($_SESSION['word_queue']) && is_array($_SESSION['word_queue'])){
-            $_SESSION['word_queue'] = array_values(array_diff($_SESSION['word_queue'], [$word_id]));
+    // 【同步更新 Session 快取計數器】
+    if (isset($_SESSION['daily_progress']['sets'][$setKey])) {
+        if ($record) {
+            $_SESSION['daily_progress']['sets'][$setKey]['total'] += 1;
+            if ($isCorrect === 'false') {
+                $_SESSION['daily_progress']['sets'][$setKey]['wrong'] += 1;
+            }
+        } else {
+            $_SESSION['daily_progress']['sets'][$setKey]['new_word_count'] += 1;
+            $_SESSION['daily_progress']['sets'][$setKey]['pool_size'] += 1;
         }
-
-        echo json_encode(['status' => 'success', 'message' => 'you have learned this word.']);
-    }else {
-        echo json_encode(['status' => 'error', 'message' => 'learning_record update fail.']);
     }
-
-    exit;
 }
 
-// 取消已經學習過的牌卡
-if(isset($_GET['action']) && $_GET['action'] == 'forgot'){
-    header('Content-Type: application/json; charset=utf8;');
+/* =========================================================================
+   第二部分：動態完工審查與下一張卡片抽取路由 (活用 $currentDB->q)
+   ========================================================================= */
+$word_data = null;
+$isFinishedSignal = false;
 
-    if(!isset($_SESSION['username'])){
-        echo json_encode(['status' => 'error', 'message' => 'please login first']);
-        exit;
-    }
-
-    $word_id = intval($_GET['id'] ?? 0);
-    if($word_id <= 0){
-        echo json_encode(['status' => 'error', 'message' => 'fail word id']);
-        exit;
-    }
-
-    $sql = "SELECT `id` FROM `learning_record` WHERE `learner_id`= ? AND `word_id`= ?;";
-    $statement = $pdo->prepare($sql);
-    $statement->execute([$_SESSION['username'], $word_id]);
-    $has_record = $statement->fetch();
-
-    if($has_record){
-        $sql = "UPDATE `learning_record` SET `is_learned`='0' WHERE `learner_id`= ? AND `word_id`= ?;";
-
-        $statement = $pdo->prepare($sql);
-        $success = $statement->execute([$_SESSION['username'], $word_id]);
-    }else {
-        $sql = "INSERT INTO `learning_record`(`learner_id`, `word_id`, `is_learned`) VALUES (?, ?, '0');";
-
-        $statement = $pdo->prepare($sql);
-        $success = $statement->execute([$_SESSION['username'], $word_id]);
-    }
+if (!$isLoggedIn) {
+    /* ----- 【A. 未登入 / 訪客模式】 ----- */
+    // 活用 q() 方法，動態多表 JOIN categories 表
+    $res = $currentDB->q("SELECT t.*, c.name AS category_name FROM `$table` t LEFT JOIN `categories` c ON t.category_id = c.id ORDER BY RAND() LIMIT 1");
+    $word_data = !empty($res) ? $res[0] : null;
+} else {
+    /* ----- 【B. 已登入 / 會員模式】 ----- */
+    $current_date = date('Y-m-d');
     
-    if($success){
-        if(isset($_SESSION['word_queue']) && is_array($_SESSION['word_queue'])){
-            if(!in_array($word_id, $_SESSION['word_queue'])){
-                $_SESSION['word_queue'][] = $word_id;
+    // 安全載入 Session 快取計數器
+    $progress   = $_SESSION['daily_progress']['sets'][$setKey] ?? ['total'=>0, 'wrong'=>0, 'new_word_count'=>0, 'pool_size'=>0, 'is_finished'=>false];
+    $total      = intval($progress['total']);
+    $wrong      = intval($progress['wrong']);
+    $new_count  = intval($progress['new_word_count']);
+    $pool_size  = intval($progress['pool_size']);
+
+    // 1. 動態計算今日舊字複習正確率並配對限制額度
+    $accuracy = ($total === 0) ? 100 : (($total - $wrong) / $total) * 100;
+    if ($accuracy >= 85)     $new_limit = 20;
+    elseif ($accuracy >= 70) $new_limit = 15;
+    elseif ($accuracy >= 60) $new_limit = 10;
+    elseif ($accuracy >= 50) $new_limit = 5;
+    else                     $new_limit = 0; 
+
+    // 2. 活用 count() 方法快速檢查今天是否有尚未複習的「到期舊字」
+    $due_where = "WHERE `learner_id` = '$learner_id' AND `type` = '$do' AND `next_review_date` <= '$current_date'";
+    $has_due_words = ($LearningRecord->count($due_where) > 0);
+
+    // 3. 判定今日的正規任務是否已經完工
+    $isTodayTaskDone = (!$has_due_words && ($new_count >= $new_limit || $pool_size >= 200));
+
+    // 4. 當判定完工時，同步更新 Session 印記與資料庫獨立時間戳防線 (task_finished)
+    if ($isTodayTaskDone && $_SESSION['daily_progress']['sets'][$setKey]['is_finished'] === false) {
+        $_SESSION['daily_progress']['sets'][$setKey]['is_finished'] = true;
+        
+        // 直接使用 $Learner 物件進行欄位日期覆蓋更新
+        $Learner->save(['id' => $learner_id, 'task_finished' => $current_date]);
+    }
+
+    // 將最新進度字串同步回寫至使用者主表
+    $updated_json = json_encode($_SESSION['daily_progress'], JSON_UNESCAPED_UNICODE);
+    $Learner->save(['id' => $learner_id, 'daily_progress' => $updated_json]);
+
+    // 5. 判斷是否拋出完工訊號與處理進階卡庫分流 
+    if ($_SESSION['daily_progress']['sets'][$setKey]['is_finished'] === true || $mode !== '') {
+        $isFinishedSignal = true;
+
+        if ($mode === 'pool_hard') {
+            // 【分流軌道 1】特訓鈕 ➔ 抽取 200 字庫內最低 LV 的生字 (JOIN categories)
+            $res = $currentDB->q("SELECT lr.*, t.*, c.name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.category_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY lr.learning_level ASC, RAND() LIMIT 1");
+        } else {
+            // 【分流軌道 2】盲刷鈕 或 剛完工第一瞬間 ➔ 200 字庫內完全隨機盲刷 (JOIN categories)
+            $res = $currentDB->q("SELECT lr.*, t.*, c.name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.category_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY RAND() LIMIT 1");
+        }
+        $word_data = !empty($res) ? $res[0] : null;
+    } else {
+        // 【正常學習進行中】
+        if ($has_due_words) {
+            // [先舊後新] 強制優先抽已到期的舊字 (JOIN categories)
+            $res = $currentDB->q("SELECT lr.*, t.*, c.name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.category_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' AND lr.next_review_date <= '$current_date' ORDER BY RAND() LIMIT 1");
+            $word_data = !empty($res) ? $res[0] : null;
+        } else {
+            // 舊字已清空，發放全新單字 (受限額與總容量阻攔)
+            $res = $currentDB->q("SELECT t.*, c.name AS category_name FROM `$table` t LEFT JOIN `categories` c ON t.category_id = c.id WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY t.id ASC LIMIT 1");
+            $word_data = !empty($res) ? $res[0] : null;
+            
+            if ($word_data) {
+                $word_data['learning_level'] = 1;
+                $word_data['preview_count'] = 1; // 亮起前端 NEW 標籤
             }
         }
-
-        echo json_encode(['status' => 'success', 'message' => 'you have forgotten this word.']);
-    }else {
-        echo json_encode(['status' => 'error', 'message' => 'learning_record update fail.']);
     }
+}
 
+if (!$word_data) {
+    echo json_encode(["status" => "empty", "message" => "當前排堆已無任何可用卡片"], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+/* =========================================================================
+   第三部分：[高度擴充化] 分類名稱與音標數據抽象化映射
+   ========================================================================= */
+$final_category1 = $word_data['category_name'] ?? "";
+$final_category2 = $word_data['phonetic']      ?? ($word_data['category2'] ?? "");
+
+echo json_encode([
+    "status"        => "success",
+    "id"            => $word_data['word_id'] ?? $word_data['id'], // 確保能正確拿到原始卡片流水號
+    "word"          => $word_data['word']        ?? "",
+    "category1"     => $final_category1, 
+    "category2"     => $final_category2, 
+    "definition"    => $word_data['definition']  ?? "",
+    "translation"   => $word_data['translation'] ?? "",
+    // 如果是隨機盲刷模式 (pool_rand)，回傳 null 讓前端指標欄位呈現 '--' 隱藏不計分外觀
+    "level"         => ($mode === 'pool_rand') ? null : ($word_data['learning_level'] ?? null),
+    "preview_count" => ($mode === 'pool_rand') ? null : ($word_data['preview_count'] ?? null),
+    "isFinished"    => $isFinishedSignal
+], JSON_UNESCAPED_UNICODE);
+
+exit;
+
+?>

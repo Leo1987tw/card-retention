@@ -14,7 +14,7 @@
     <div class="right">
         <?php
 
-        if (!isset($_SESSION['user_id'])) {
+        if (!isset($_SESSION['login'])) {
             echo "<a class=\"button\" href=\"?do=register\">register</a>";
             echo "<a class=\"button\" href=\"?do=login\">login</a>";
         } else {
