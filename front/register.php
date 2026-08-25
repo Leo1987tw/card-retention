@@ -23,7 +23,7 @@
 
         <div class="button-group">
             <button type="submit" id="submitBtn">註冊</button>
-            <button type="button" onclick="location.href='../index.php?do=login';">返回登入</button>
+            <button type="button" onclick="location.href='./index.php?do=login';">返回登入</button>
         </div>
     </form>
 </fieldset>

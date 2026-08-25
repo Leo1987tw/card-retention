@@ -15,6 +15,7 @@ $mode      = isset($_GET['mode'])      ? trim($_GET['mode']) : '';
 
 // 智慧別名路由表：對應不同的 ?do= 指派正確的底層主資料表名稱、快取鍵名與專屬 DB 物件
 $route_map = [
+    'main'       => ['table' => 'words',      'key' => 'words', 'db' => $Word], // 💡 新增智慧路由，防止 main.php 的 ?do=main 找不到主表而死當
     'card_board' => ['table' => 'words',      'key' => 'words', 'db' => $Word],
     'html'       => ['table' => 'html_terms', 'key' => 'html',  'db' => $HTML],
     'css'        => ['table' => 'css_terms',  'key' => 'css',   'db' => $CSS]
@@ -120,8 +121,8 @@ $isFinishedSignal = false;
 
 if (!$isLoggedIn) {
     /* ----- 【A. 未登入 / 訪客模式】 ----- */
-    // 活用 q() 方法，動態多表 JOIN categories 表
-    $res = $currentDB->q("SELECT t.*, c.name AS category_name FROM `$table` t LEFT JOIN `categories` c ON t.category_id = c.id ORDER BY RAND() LIMIT 1");
+    // 💡 修正關聯：將關聯欄位修為 part_of_speech_id，並撈取真實存在的 display_name
+    $res = $currentDB->q("SELECT t.*, c.display_name AS category_name FROM `$table` t LEFT JOIN `categories` c ON t.part_of_speech_id = c.id ORDER BY RAND() LIMIT 1");
     $word_data = !empty($res) ? $res[0] : null;
 } else {
     /* ----- 【B. 已登入 / 會員模式】 ----- */
@@ -166,22 +167,22 @@ if (!$isLoggedIn) {
         $isFinishedSignal = true;
 
         if ($mode === 'pool_hard') {
-            // 【分流軌道 1】特訓鈕 ➔ 抽取 200 字庫內最低 LV 的生字 (JOIN categories)
-            $res = $currentDB->q("SELECT lr.*, t.*, c.name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.category_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY lr.learning_level ASC, RAND() LIMIT 1");
+            // 【分流軌道 1】特訓鈕 ➔ 抽取 200 字庫內最低 LV 的生字 (💡 修正關聯：part_of_speech_id & display_name)
+            $res = $currentDB->q("SELECT lr.*, t.*, c.display_name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.part_of_speech_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY lr.learning_level ASC, RAND() LIMIT 1");
         } else {
-            // 【分流軌道 2】盲刷鈕 或 剛完工第一瞬間 ➔ 200 字庫內完全隨機盲刷 (JOIN categories)
-            $res = $currentDB->q("SELECT lr.*, t.*, c.name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.category_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY RAND() LIMIT 1");
+            // 【分流軌道 2】盲刷鈕 或 剛完工第一瞬間 ➔ 200 字庫內完全隨機盲刷 (💡 修正關聯：part_of_speech_id & display_name)
+            $res = $currentDB->q("SELECT lr.*, t.*, c.display_name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.part_of_speech_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY RAND() LIMIT 1");
         }
         $word_data = !empty($res) ? $res[0] : null;
     } else {
         // 【正常學習進行中】
         if ($has_due_words) {
-            // [先舊後新] 強制優先抽已到期的舊字 (JOIN categories)
-            $res = $currentDB->q("SELECT lr.*, t.*, c.name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.category_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' AND lr.next_review_date <= '$current_date' ORDER BY RAND() LIMIT 1");
+            // [先舊後新] 強制優先抽已到期的舊字 (💡 修正關聯：part_of_speech_id & display_name)
+            $res = $currentDB->q("SELECT lr.*, t.*, c.display_name AS category_name FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id LEFT JOIN `categories` c ON t.part_of_speech_id = c.id WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' AND lr.next_review_date <= '$current_date' ORDER BY RAND() LIMIT 1");
             $word_data = !empty($res) ? $res[0] : null;
         } else {
-            // 舊字已清空，發放全新單字 (受限額與總容量阻攔)
-            $res = $currentDB->q("SELECT t.*, c.name AS category_name FROM `$table` t LEFT JOIN `categories` c ON t.category_id = c.id WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY t.id ASC LIMIT 1");
+            // 舊字已清空，發放全新單字 (💡 修正關聯：part_of_speech_id & display_name)
+            $res = $currentDB->q("SELECT t.*, c.display_name AS category_name FROM `$table` t LEFT JOIN `categories` c ON t.part_of_speech_id = c.id WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY RAND() LIMIT 1");
             $word_data = !empty($res) ? $res[0] : null;
             
             if ($word_data) {

@@ -21,7 +21,7 @@ window.onload = () => {
 function getInitialFinishedCard() {
     const urlParams = new URLSearchParams(window.location.search);
     const currentDo = urlParams.get('do') || 'card_board';
-    
+
     fetch(`./api/api.php?do=${encodeURIComponent(currentDo)}&mode=pool_rand`)
         .then(response => response.json())
         .then(data => {
@@ -40,7 +40,7 @@ function flipCard(event) {
     if (event.target.closest('#audio') || event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT') {
         return;
     }
-    
+
     // 如果畫面目前是「任務結束」的結算訊息盒，點擊不觸發翻轉動畫
     if (document.querySelector('.finished-box')) {
         alert("今日任務已達成！請點擊下方按鈕開始複習字庫。");
@@ -56,12 +56,14 @@ function flipCard(event) {
 }
 
 // 監聽翻牌動畫結束：精簡旋轉角度，避免數值無限疊加
-card.addEventListener('transitionend', () => {
-    card.style.transition = "none";
-    degree %= 360;
-    if (degree < 0) degree += 360;
-    card.style.transform = `rotateY(${degree}deg)`;
-});
+if (card) {
+    card.addEventListener('transitionend', () => {
+        card.style.transition = "none";
+        degree %= 360;
+        if (degree < 0) degree += 360;
+        card.style.transform = `rotateY(${degree}deg)`;
+    });
+}
 
 /**
  * 核心 2：抽下一張牌 (nextCard)
@@ -73,7 +75,7 @@ function nextCard(isCorrect, event) {
     const currentDo = urlParams.get('do') || 'card_board';
 
     let url = `./api/api.php?do=${encodeURIComponent(currentDo)}`;
-    
+
     // 如果今天任務已經完成了，按鈕功能全面質變
     if (isTaskFinished) {
         if (isCorrect === true) {
@@ -91,12 +93,12 @@ function nextCard(isCorrect, event) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                
+
                 // 情境：一般學習過程中，「作答的當下」剛好清空舊字並觸發完工
                 if (data.isFinished && !isTaskFinished) {
-                    isTaskFinished = true; 
+                    isTaskFinished = true;
                     renderButtonFinishedStyle(); // 渲染按鈕質變樣式
-                    
+
                     // 動態將卡牌區塊替換為完工結算畫面
                     document.getElementById('card-board').innerHTML = `
                         <div class="finished-box" style="text-align: center; padding: 40px 20px;">
@@ -107,7 +109,7 @@ function nextCard(isCorrect, event) {
                             </p>
                         </div>
                     `;
-                    return; 
+                    return;
                 }
 
                 // 情境：如果是「完工後連續點擊按鈕複習字庫」，將卡牌結構復原
@@ -123,7 +125,8 @@ function nextCard(isCorrect, event) {
                     fillCardContent(data);
                 }
             } else {
-                document.getElementById('word').innerText = 'Fetch data fail.';
+                const wordNode = document.getElementById('word');
+                if (wordNode) wordNode.innerText = 'Fetch data fail.';
             }
         })
         .catch(error => {
@@ -132,7 +135,7 @@ function nextCard(isCorrect, event) {
 }
 
 /**
- * 輔助：當點擊特訓/盲刷時，將「任務結束」文字替換回「卡牌 3D 結構」
+ * 輔助 1：當點擊特訓/盲刷時，將「任務結束」文字替換回「卡牌 3D 結構」
  */
 function restoreCardLayoutIfFinished() {
     const finishedBox = document.querySelector('.finished-box');
@@ -164,8 +167,8 @@ function restoreCardLayoutIfFinished() {
 }
 
 /**
- * 輔助 2：資料填入功能 (fillCardContent)
- * 精確對接新版精簡 id 選取器
+ * 輔支 2：資料填入功能 (fillCardContent)
+ * 💡 核心修正：將前端所有新舊 ID 欄位，精確綁定後端回傳的通用 category1 與 category2 數據通道！
  */
 function fillCardContent(data) {
     currentId = data.id;
@@ -175,20 +178,24 @@ function fillCardContent(data) {
     let elementMapping = {};
     switch (currentDo) {
         case 'card_board':
+        case 'main': // 確保 ?do=main 與預設字庫走入相同渲染流程
             elementMapping = {
-                'word':           data.word,
-                'definition':     data.definition,
-                'translation':    data.translation,
-                'part-of-speech': data.part_of_speech,
-                'category1':      data.part_of_speech,
-                'phonetic':       data.phonetic,
-                'category2':      data.phonetic
+                'word': data.word,
+                'definition': data.definition,
+                'translation': data.translation,
+                'part-of-speech': data.category1, // 對接後端 category1 (c.display_name)
+                'category1': data.category1, // 預留擴充 ID
+                'phonetic': data.category2, // 對接後端 category2 (phonetic)
+                'category2': data.category2  // 預留擴充 ID
             };
             break;
         default:
             elementMapping = {
-                'word': data.word, 'definition': data.definition, 'translation': data.translation,
-                'category1': data.part_of_speech, 'category2': data.phonetic
+                'word': data.word,
+                'definition': data.definition,
+                'translation': data.translation,
+                'category1': data.category1,
+                'category2': data.category2
             };
             break;
     }
@@ -201,14 +208,20 @@ function fillCardContent(data) {
 
     // 【精確對接】改用最精準、效能最好的專屬 ID 進行指標數據渲染
     const levelSpan = document.getElementById('current-level');
-    if (levelSpan) levelSpan.innerText = data.level !== null ? data.level : '--';
-    
+    if (levelSpan) {
+        levelSpan.innerText = (data.level !== null && data.level !== undefined) ? data.level : '--';
+    }
+
     const countSpan = document.getElementById('current-preview-count');
-    if (countSpan) countSpan.innerText = data.preview_count !== null ? data.preview_count : '--';
-    
+    if (countSpan) {
+        countSpan.innerText = (data.preview_count !== null && data.preview_count !== undefined) ? data.preview_count : '--';
+    }
+
     // 控制 NEW 標籤是否顯示
     const newTag = document.querySelector('.new');
-    if (newTag) { newTag.style.display = (data.preview_count == 1) ? 'block' : 'none'; }
+    if (newTag) {
+        newTag.style.display = (Number(data.preview_count) === 1) ? 'block' : 'none';
+    }
 }
 
 /**
@@ -221,12 +234,12 @@ function renderButtonFinishedStyle() {
         const wrongBtn = btnGroup[1];   // 答錯了 按鈕
 
         correctBtn.innerText = "🎯 字庫生字特訓";
-        correctBtn.style.backgroundColor = "#2a9d8f"; 
+        correctBtn.style.backgroundColor = "#2a9d8f";
         correctBtn.style.color = "#ffffff";
         correctBtn.title = "鎖定在您已建立的200字庫中，專門抽取低等級生字強化複習！";
 
         wrongBtn.innerText = "🎲 字庫隨機盲刷";
-        wrongBtn.style.backgroundColor = "#e76f51"; 
+        wrongBtn.style.backgroundColor = "#e76f51";
         wrongBtn.style.color = "#ffffff";
         wrongBtn.title = "從200字庫中完全隨機抽選，且此模式點擊對錯不會記錄、不扣分！";
     }
@@ -236,15 +249,15 @@ function renderButtonFinishedStyle() {
  * 輔助 4：語音發音 (pronounce)
  */
 function pronounce(event) {
-    if (event) event.stopPropagation(); 
+    if (event) event.stopPropagation();
     const wordText = document.getElementById('word').innerText.trim();
     if (!wordText || wordText === 'Fetch data fail.' || wordText === 'Connection fail.' || wordText === '載入中...') return;
 
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel(); // 停止先前的聲音，防止堆疊
         const utterance = new SpeechSynthesisUtterance(wordText);
-        utterance.lang = 'en-US'; 
-        utterance.rate = 0.9;     
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     }
 }

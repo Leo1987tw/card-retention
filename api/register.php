@@ -1,6 +1,6 @@
 <?php
 
-include_once "../db.php";
+include_once "./db.php";
 
 // 檢查是否為 POST 請求，且必要欄位皆有傳遞
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset($_POST['password']) && isset($_POST['password2'])) {
