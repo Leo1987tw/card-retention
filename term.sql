@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.1.0
 -- https://www.phpmyadmin.net/
 --
--- 主機： 127.0.0.1
--- 產生時間： 2026-08-23 16:23:08
--- 伺服器版本： 10.4.32-MariaDB
--- PHP 版本： 8.2.12
+-- 主機： localhost
+-- 產生時間： 2026 年 08 月 25 日 13:25
+-- 伺服器版本： 10.3.39-MariaDB-0ubuntu0.20.04.2
+-- PHP 版本： 7.4.3-4ubuntu2.29
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫： `terms`
+-- 資料庫： `s1150111`
 --
 
 -- --------------------------------------------------------
@@ -48,13 +48,20 @@ INSERT INTO `categories` (`id`, `code`, `display_name`) VALUES
 (8, 'html_inline', '行內標籤'),
 (9, 'html_global_attribute', '全域屬性'),
 (10, 'html_specific_attribute', '專屬屬性'),
-(11, 'css_layout', '佈局樣式'),
-(12, 'css_text', '文字樣式'),
-(13, 'css_visual', '視覺外觀'),
-(14, 'css_animation', '動畫特效'),
-(15, 'css_selector', '選擇器'),
-(16, 'css_pseudo_class', '偽類'),
-(17, 'css_pseudo_element', '偽元素');
+(11, 'html_semantic', '語意化結構'),
+(12, 'html_form', '表單與輸入'),
+(13, 'html_event', '事件屬性'),
+(14, 'css_main_specificity', '權重優先權'),
+(15, 'css_main_box_model', '盒模型'),
+(16, 'css_main_layout', '佈局排版'),
+(17, 'css_main_positioning', '座標定位'),
+(18, 'css_sub_foundation', '基礎重設'),
+(19, 'css_sub_typography', '文字排版'),
+(20, 'css_sub_visual', '視覺外觀'),
+(21, 'css_sub_animation', '動態特效'),
+(22, 'css_sub_layout', '佈局應用'),
+(23, 'css_sub_positioning', '定位應用'),
+(24, '', '');
 
 -- --------------------------------------------------------
 
@@ -78,7 +85,7 @@ CREATE TABLE `css_terms` (
 CREATE TABLE `fetch_progress` (
   `id` int(11) UNSIGNED NOT NULL,
   `last_word_id` int(11) UNSIGNED NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- 傾印資料表的資料 `fetch_progress`
@@ -12587,7 +12594,7 @@ ALTER TABLE `words`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `css_terms`
