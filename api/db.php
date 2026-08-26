@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 date_default_timezone_set("Asia/Taipei");
 
 $config = require __DIR__ . "/../../db_config/vocabulary/db_config.php";
@@ -83,7 +85,8 @@ class DB
         return $statement->fetchColumn();
     }
 
-    public function find($where)
+    // 💡 已修正：安全補上 $next = null，徹底解決未定義變數崩潰的 Bug
+    public function find($where, $next = null)
     {
         $sql = "SELECT * FROM `$this->table` WHERE ";
         $bindings = [];
@@ -141,9 +144,17 @@ class DB
         $statement->execute($bindings);
     }
 
-    public function q($sql)
+    // 💡 已升級：智慧自訂複雜查詢通道，安全通吃 api.php 的多表 JOIN 與 RAND()
+    public function q($sql, $bindings = [])
     {
-        return $this->pdo->query($sql)->fetchAll();
+        if (!empty($bindings)) {
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute($bindings);
+            return $statement->fetchAll();
+        }
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute();
+        return $statement->fetchAll();
     }
 }
 
@@ -160,11 +171,12 @@ function dd($array)
     echo "</pre>";
 }
 
-$Category = new DB('categories');
-$CSS = new DB('css_terms');
-$HTML = new DB('html_terms');
-$Learner = new DB('learners');
+// 實例化全域物件
+$Category       = new DB('categories');
+$CSS            = new DB('css_terms');
+$HTML           = new DB('html_terms');
+$Learner        = new DB('learners');
 $LearningRecord = new DB('learning_records');
-$Word = new DB('words');
+$Word           = new DB('words');
 
 ?>

@@ -1,6 +1,7 @@
 const card = document.getElementById('card');
 let degree = 0;
 let currentId = -1;
+let currentAudioUrl = ""; // 💡 全新配置：儲存當前卡片從資料庫撈出的真人音檔網址
 
 // 頁面載入時自動初始化第一張卡片
 window.onload = () => {
@@ -20,13 +21,14 @@ window.onload = () => {
  */
 function getInitialFinishedCard() {
     const urlParams = new URLSearchParams(window.location.search);
-    const currentDo = urlParams.get('do') || 'card_board';
+    const currentDo = urlParams.get('do') || 'main'; // 預設對接單一入口路由
 
     fetch(`./api/api.php?do=${encodeURIComponent(currentDo)}&mode=pool_rand`)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
                 currentId = data.id;
+                currentAudioUrl = data.audio || ""; // 緩存發音網址
             }
         })
         .catch(error => console.error('初始字庫載入失敗: ', error));
@@ -72,7 +74,7 @@ function nextCard(isCorrect, event) {
     if (event) event.stopPropagation();
 
     const urlParams = new URLSearchParams(window.location.search);
-    const currentDo = urlParams.get('do') || 'card_board';
+    const currentDo = urlParams.get('do') || 'main';
 
     let url = `./api/api.php?do=${encodeURIComponent(currentDo)}`;
 
@@ -101,7 +103,7 @@ function nextCard(isCorrect, event) {
 
                     // 動態將卡牌區塊替換為完工結算畫面
                     document.getElementById('card-board').innerHTML = `
-                        <div class="finished-box" style="text-align: center; padding: 40px 20px;">
+                        <div class="finished-box">
                             <h1 style="font-size: 4rem; margin-bottom: 20px;">🎉</h1>
                             <h2 style="color: #2a9d8f; margin-bottom: 15px;">您今天的任務結束！</h2>
                             <p style="color: #666; font-size: 1.1rem; line-height: 1.6;">
@@ -150,8 +152,9 @@ function restoreCardLayoutIfFinished() {
                     </div>
                     <p class="word" id="word">載入中...</p>
                     <div style="position: absolute; bottom: 80px; display: flex; justify-content: center; align-items: center;">
-                        <p class="category1" id="part-of-speech">--</p>
-                        <p class="category2" id="phonetic">--</p>
+                        <!-- 💡 核心修正：動態重建的結構也同步更名為簡潔的 category1 與 category2 ID -->
+                        <p class="category1" id="category1">--</p>
+                        <p class="category2" id="category2">--</p>
                         <button class="audio" id="audio" onclick="pronounce(event)">發音</button>
                     </div>
                 </div>
@@ -161,52 +164,37 @@ function restoreCardLayoutIfFinished() {
                 </div>
             </div>
         `;
-        // 重新獲取剛生成的 card DOM 物件，確保全域變數可以正常對接動畫
+        // 重新獲取剛生成的 card DOM 物件，確保全域變數可以正常對接動畫與旋轉
         window.card = document.getElementById('card');
     }
 }
 
 /**
- * 輔支 2：資料填入功能 (fillCardContent)
- * 💡 核心修正：將前端所有新舊 ID 欄位，精確綁定後端回傳的通用 category1 與 category2 數據通道！
+ * 輔助 2：資料填入功能 (fillCardContent)
+ * 💡 極致優化：因為 HTML ID 與後端通道 100% 同名，直接進行一對一「乾淨映射」，省去所有 switch/if 判斷分流！
  */
 function fillCardContent(data) {
     currentId = data.id;
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentDo = urlParams.get('do') || 'card_board';
+    currentAudioUrl = data.audio || ""; // 智慧通道：每次更換卡片，即更新真人發音網址
 
-    let elementMapping = {};
-    switch (currentDo) {
-        case 'card_board':
-        case 'main': // 確保 ?do=main 與預設字庫走入相同渲染流程
-            elementMapping = {
-                'word': data.word,
-                'definition': data.definition,
-                'translation': data.translation,
-                'part-of-speech': data.category1, // 對接後端 category1 (c.display_name)
-                'category1': data.category1, // 預留擴充 ID
-                'phonetic': data.category2, // 對接後端 category2 (phonetic)
-                'category2': data.category2  // 預留擴充 ID
-            };
-            break;
-        default:
-            elementMapping = {
-                'word': data.word,
-                'definition': data.definition,
-                'translation': data.translation,
-                'category1': data.category1,
-                'category2': data.category2
-            };
-            break;
-    }
+    // 建立萬用欄位盲填對照映射表
+    const elementMapping = {
+        'word': data.word,
+        'definition': data.definition,
+        'translation': data.translation,
+        'category1': data.category1, // 後端主分類數據 ➔ 填入 id="category1" 的 HTML
+        'category2': data.category2  // 後端次分類數據 ➔ 填入 id="category2" 的 HTML
+    };
 
-    // 安全遍歷渲染欄位
+    // 安全遍歷渲染所有對應欄位
     Object.keys(elementMapping).forEach(id => {
         const element = document.getElementById(id);
-        if (element) { element.innerText = elementMapping[id] || ''; }
+        if (element) { 
+            element.innerText = elementMapping[id] || ''; 
+        }
     });
 
-    // 【精確對接】改用最精準、效能最好的專屬 ID 進行指標數據渲染
+    // 【指標數據欄位渲染】
     const levelSpan = document.getElementById('current-level');
     if (levelSpan) {
         levelSpan.innerText = (data.level !== null && data.level !== undefined) ? data.level : '--';
@@ -246,16 +234,33 @@ function renderButtonFinishedStyle() {
 }
 
 /**
- * 輔助 4：語音發音 (pronounce)
+ * 輔助 4：語音發音 (pronounce) - 真人音檔優先與原生機器音備援雙軌切換
  */
 function pronounce(event) {
     if (event) event.stopPropagation();
     const wordText = document.getElementById('word').innerText.trim();
-    if (!wordText || wordText === 'Fetch data fail.' || wordText === 'Connection fail.' || wordText === '載入中...') return;
+    if (!wordText || ['Fetch data fail.', 'Connection fail.', '載入中...'].includes(wordText)) return;
 
+    // 軌道 A：如果當前卡片帶有真實 mp3 網址，走最高品質真人語音播放
+    if (currentAudioUrl) {
+        const audio = new Audio(currentAudioUrl);
+        audio.play().catch(err => {
+            console.warn("真人音檔播放失敗，自動轉為 TTS 備援發音:", err);
+            executeTTS(wordText); // 音檔失效或不支援時，無縫啟動防禦機器音
+        });
+    } else {
+        // 軌道 B：無音檔時（如 HTML/CSS 專業術語庫），直接走 TTS 發音
+        executeTTS(wordText);
+    }
+}
+
+/**
+ * 原生網頁 TTS 發音引擎封裝
+ */
+function executeTTS(text) {
     if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // 停止先前的聲音，防止堆疊
-        const utterance = new SpeechSynthesisUtterance(wordText);
+        window.speechSynthesis.cancel(); // 停止先前的聲音，防止連點時語音嚴重延遲堆疊
+        const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
         utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);

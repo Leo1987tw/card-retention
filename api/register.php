@@ -1,5 +1,6 @@
 <?php
 
+// 💡 根據 VS Code 目錄結構，register.php 與 db.php 都在 api 資料夾內，使用 ./db.php
 include_once "./db.php";
 
 // 檢查是否為 POST 請求，且必要欄位皆有傳遞
@@ -38,17 +39,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
         // 5. 使用安全雜湊演算法加密密碼
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // 準備寫入資料庫的陣列（欄位名稱請依據您資料表實際名稱調整，例如：username, password）
+        // 🌟 智慧補強：幫全新註冊的使用者，直接初始化一份乾淨的每日學習進度 JSON 大底座！
+        $today_date = date('Y-m-d');
+        $init_progress = [
+            'last_date' => $today_date,
+            'login_at'  => date('Y-m-d H:i:s'),
+            'sets' => [
+                'words' => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false],
+                'html'  => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false],
+                'css'   => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false]
+            ]
+        ];
+        $init_progress_json = json_encode($init_progress, JSON_UNESCAPED_UNICODE);
+
+        // 準備寫入資料庫的陣列（包含加密後的密碼與初始進度包）
         $data = [
-            'username' => $username,
-            'password' => $hashed_password
+            'username'       => $username,
+            'password'       => $hashed_password,
+            'daily_progress' => $init_progress_json // 🌟 讓新帳號註冊一落地就自帶完美結構
         ];
 
         try {
             // 6. 執行儲存
             $Learner->save($data);
 
-            // 7. 提示成功並跳轉至登入頁面
+            // 7. 提示成功並正确往上跳一層 (../) 導回根目錄 index.php 的登入頁面
             echo "<script>";
             echo "alert('註冊成功！請使用新帳號登入。');";
             echo "location.href='../index.php?do=login';";
@@ -61,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
         }
     }
 } else {
-    // 非正常 POST 訪問，直接導回登入頁
-    to("../index.php?do=login");
+    // 💡 修正跳轉：非正常 POST 訪問時，正確往上跳一層導回登入頁
+    header("Location: ../index.php?do=login");
     exit();
 }

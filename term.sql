@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- 主機： localhost
--- 產生時間： 2026 年 08 月 25 日 13:25
--- 伺服器版本： 10.3.39-MariaDB-0ubuntu0.20.04.2
--- PHP 版本： 7.4.3-4ubuntu2.29
+-- 主機： 127.0.0.1
+-- 產生時間： 2026-08-26 20:00:49
+-- 伺服器版本： 10.4.32-MariaDB
+-- PHP 版本： 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫： `s1150111`
+-- 資料庫： `term`
 --
 
 -- --------------------------------------------------------
@@ -44,24 +44,23 @@ INSERT INTO `categories` (`id`, `code`, `display_name`) VALUES
 (4, 'adverb', '副詞'),
 (5, 'preposition', '介係詞'),
 (6, 'conjuction', '連接詞'),
-(7, 'html_block', '區塊標籤'),
-(8, 'html_inline', '行內標籤'),
+(7, 'html_block', '區塊元素'),
+(8, 'html_inline', '行內元素'),
 (9, 'html_global_attribute', '全域屬性'),
 (10, 'html_specific_attribute', '專屬屬性'),
 (11, 'html_semantic', '語意化結構'),
 (12, 'html_form', '表單與輸入'),
 (13, 'html_event', '事件屬性'),
-(14, 'css_main_specificity', '權重優先權'),
-(15, 'css_main_box_model', '盒模型'),
-(16, 'css_main_layout', '佈局排版'),
-(17, 'css_main_positioning', '座標定位'),
-(18, 'css_sub_foundation', '基礎重設'),
+(14, 'css_specificity', '特異度 (權重)'),
+(15, 'css_box_model', '盒模型'),
+(16, 'css_layout', '網頁佈局'),
+(17, 'css_positioning', '定位模式'),
+(18, 'css_sub_foundation', '基礎屬性'),
 (19, 'css_sub_typography', '文字排版'),
 (20, 'css_sub_visual', '視覺外觀'),
 (21, 'css_sub_animation', '動態特效'),
-(22, 'css_sub_layout', '佈局應用'),
-(23, 'css_sub_positioning', '定位應用'),
-(24, '', '');
+(22, 'css_sub_layout', '佈局結構'),
+(23, 'css_sub_positioning', '空間定位');
 
 -- --------------------------------------------------------
 
@@ -72,9 +71,582 @@ INSERT INTO `categories` (`id`, `code`, `display_name`) VALUES
 CREATE TABLE `css_terms` (
   `id` int(11) UNSIGNED NOT NULL,
   `term_name` varchar(50) NOT NULL,
-  `category_id` int(11) UNSIGNED NOT NULL,
+  `category1_id` int(11) UNSIGNED NOT NULL,
+  `category2_id` int(11) UNSIGNED NOT NULL,
   `description` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `css_terms`
+--
+
+INSERT INTO `css_terms` (`id`, `term_name`, `category1_id`, `category2_id`, `description`) VALUES
+(1, 'accent-color', 15, 20, '【強調色】 Specifies an accent color for user-interface controls'),
+(2, 'align-content', 16, 22, '【多行項目對齊】 Specifies the alignment between the lines inside a flexible container when the items do not use all available space'),
+(3, 'align-items', 16, 22, '【單行項目對齊】 Specifies the alignment for items inside a flexible container'),
+(4, 'align-self', 16, 22, '【個別項目對齊】 Specifies the alignment for selected items inside a flexible container'),
+(5, 'all', 15, 18, '【全部屬性重設】 Resets all properties (except unicode-bidi and direction)'),
+(6, 'animation', 16, 21, '【複合動畫屬性】 A shorthand property for all the animation-* properties'),
+(7, 'animation-delay', 16, 21, '【動畫延遲播放時間】 Specifies a delay for the start of an animation'),
+(8, 'animation-direction', 16, 21, '【動畫播放方向】 Specifies whether an animation should be played forward, backward or in alternate cycles'),
+(9, 'animation-duration', 16, 21, '【動畫播放總耗時】 Specifies how long an animation should take to complete one cycle'),
+(10, 'animation-fill-mode', 16, 21, '【動畫前後樣式鎖定】 Specifies a style for the element when the animation is not playing (before it starts, after it ends, or both)'),
+(11, 'animation-iteration-count', 16, 21, '【動畫重複播放次數】 Specifies the number of times an animation should be played'),
+(12, 'animation-name', 16, 21, '【動畫綁定名稱】 Specifies a name for the @keyframes animation'),
+(13, 'animation-play-state', 16, 21, '【動畫運行與暫停狀態】 Specifies whether the animation is running or paused'),
+(14, 'animation-timing-function', 16, 21, '【動畫速度曲線（貝茲曲線）】 Specifies the speed curve of an animation'),
+(15, 'aspect-ratio', 15, 20, '【元素寬高比】 Specifies preferred aspect ratio of an element'),
+(16, 'backdrop-filter', 15, 20, '【背景濾鏡】 Defines a graphical effect to the area behind an element'),
+(17, 'backface-visibility', 17, 23, '【背面可見性】 Defines whether or not the back face of an element should be visible when facing the user'),
+(18, 'background', 15, 20, '【背景綜合屬性】 A shorthand property for all background properties'),
+(19, 'background-attachment', 15, 20, '【背景圖固定或捲動】 Sets whether a background image scrolls with the rest of the page, or is fixed'),
+(20, 'background-blend-mode', 15, 20, '【背景混合模式】 Specifies the blending mode of each background layer (color or image)'),
+(21, 'background-clip', 15, 20, '【背景裁剪範圍】 Defines how far the background (color or image) should extend within an element'),
+(22, 'background-color', 15, 20, '【背景顏色】 Specifies the background color of an element'),
+(23, 'background-image', 15, 20, '【背景圖片】 Specifies one or more background images for an element'),
+(24, 'background-origin', 15, 20, '【背景圖基準位置】 Specifies the origin position of a background image'),
+(25, 'background-position', 15, 20, '【背景圖座標位置】 Specifies the position of a background image'),
+(26, 'background-position-x', 15, 20, '【背景圖水平位置】 Specifies the position of a background image on x-axis'),
+(27, 'background-position-y', 15, 20, '【背景圖垂直位置】 Specifies the position of a background image on y-axis'),
+(28, 'background-repeat', 15, 20, '【背景圖重複平鋪規則】 Sets if and how a background image will be repeated'),
+(29, 'background-size', 15, 20, '【背景圖片尺寸】 Specifies the size of the background images'),
+(30, 'block-size', 15, 22, '【區塊維度尺寸】 Specifies the size of an element in block direction'),
+(31, 'border', 15, 20, '【邊框綜合屬性】 A shorthand property for border-width, border-style and border-color'),
+(32, 'border-block', 15, 22, '【區塊維度邊框綜合】 A shorthand property for border-block-width, border-block-style and border-block-color'),
+(33, 'border-block-color', 15, 22, '【區塊維度邊框顏色】 Sets the color of the borders at start and end in the block direction'),
+(34, 'border-block-end', 15, 22, '【區塊維度末端邊框綜合】 A shorthand property for border-block-end-width, border-block-end-style and border-block-end-color'),
+(35, 'border-block-end-color', 15, 22, '【區塊維度末端邊框顏色】 Sets the color of the border at the end in the block direction'),
+(36, 'border-block-end-style', 15, 22, '【區塊維度末端邊框樣式】 Sets the style of the border at the end in the block direction'),
+(37, 'border-block-end-width', 15, 22, '【區塊維度末端邊框寬度】 Sets the width of the border at the end in the block direction'),
+(38, 'border-block-start', 15, 22, '--【區塊維度前端邊框綜合】 A shorthand property for border-block-start-width, border-block-start-style and border-block-start-color'),
+(39, 'border-block-start-color', 15, 22, '【區塊維度前端邊框顏色】 Sets the color of the border at the start in the block direction'),
+(40, 'border-block-start-style', 15, 22, '【區塊維度前端邊框樣式】 Sets the style of the border at the start in the block direction'),
+(41, 'border-block-start-width', 15, 22, '【區塊維度前端邊框寬度】 Sets the width of the border at the start in the block direction'),
+(42, 'border-block-style', 15, 22, '【區塊維度邊框樣式】 Sets the style of the borders at start and end in the block direction'),
+(43, 'border-block-width', 15, 22, '【區塊維度邊框寬度】 Sets the width of the borders at start and end in the block direction'),
+(44, 'border-bottom', 15, 20, '【下邊框綜合屬性】 A shorthand property for border-bottom-width, border-bottom-style and border-bottom-color'),
+(45, 'border-bottom-color', 15, 20, '【下邊框顏色】 Sets the color of the bottom border'),
+(46, 'border-bottom-left-radius', 15, 20, '【左下圓角】 Defines the radius of the border of the bottom-left corner'),
+(47, 'border-bottom-right-radius', 15, 20, '【右下圓角】 Defines the radius of the border of the bottom-right corner'),
+(48, 'border-bottom-style', 15, 20, '【下邊框樣式】 Sets the style of the bottom border'),
+(49, 'border-bottom-width', 15, 20, '【下邊框寬度】 Sets the width of the bottom border'),
+(50, 'border-collapse', 15, 22, '【表格邊框合併規則】 Sets whether table borders should collapse into a single border or be separated'),
+(51, 'border-color', 15, 20, '【四手邊框顏色】 Sets the color of the four borders'),
+(52, 'border-end-end-radius', 15, 22, '【塊級末端角圓角】 Sets the radius of the corner between the block-end and the inline-end sides'),
+(53, 'border-end-start-radius', 15, 22, '【塊級起點角圓角】 Sets the radius of the corner between the block-end and the inline-start sides'),
+(54, 'border-image', 15, 20, '【圖片邊框綜合屬性】 A shorthand property for border image properties'),
+(55, 'border-image-outset', 15, 20, '【圖片邊框外襯量】 Specifies the amount by which the border image area extends beyond the border box'),
+(56, 'border-image-repeat', 15, 20, '【圖片邊框重複規則】 Specifies whether the border image should be repeated, rounded or stretched'),
+(57, 'border-image-slice', 15, 20, '【圖片邊框切片規格】 Specifies how to slice the border image'),
+(58, 'border-image-source', 15, 20, '【圖片邊框來源網址】 Specifies the path to the image to be used as a border'),
+(59, 'border-image-width', 15, 20, '【圖片邊框寬度】 Specifies the width of the border image'),
+(60, 'border-inline', 15, 22, '【行內維度邊框綜合】 A shorthand property for border-inline-width, border-inline-style and border-inline-color'),
+(61, 'border-inline-color', 15, 22, '【行內維度邊框顏色】 Sets the color of the borders at start and end in the inline direction'),
+(62, 'border-inline-end', 15, 22, '【行內維度末端邊框綜合】 A shorthand property for border-inline-end-width, border-inline-end-style and border-inline-end-color'),
+(63, 'border-inline-end-color', 15, 22, '【行內維度末端邊框顏色】 Sets the color of the border at the end in the inline direction'),
+(64, 'border-inline-end-style', 15, 22, '【行內維度末端邊框樣式】 Sets the style of the border at the end in the inline direction'),
+(65, 'border-inline-end-width', 15, 22, '【行內維度末端邊框寬度】 Sets the width of the border at the end in the inline direction'),
+(66, 'border-inline-start', 15, 22, '【行內維度前端邊框綜合】 A shorthand property for border-inline-start-width, border-inline-start-style and border-inline-start-color'),
+(67, 'border-inline-start-color', 15, 22, '【行內維度前端邊框顏色】 Sets the color of the border at the start in the inline direction'),
+(68, 'border-inline-start-style', 15, 22, '【行內維度前端邊框樣式】 Sets the style of the border at the start in the inline direction'),
+(69, 'border-inline-start-width', 15, 22, '【行內維度前端邊框寬度】 Sets the width of the border at the start in the inline direction'),
+(70, 'border-inline-style', 15, 22, '【行內維度邊框樣式】 Sets the style of the borders at start and end in the inline direction'),
+(71, 'border-inline-width', 15, 22, '【行內維度邊框寬度】 Sets the width of the borders at start and end in the inline direction'),
+(72, 'border-left', 15, 20, '【左邊框綜合屬性】 A shorthand property for all the border-left properties'),
+(73, 'border-left-color', 15, 20, '【左邊框顏色】 Sets the color of the left border'),
+(74, 'border-left-style', 15, 20, '【左邊框樣式】 Sets the style of the left border'),
+(75, 'border-left-width', 15, 20, '【左邊框寬度】 Sets the width of the left border'),
+(76, 'border-radius', 15, 20, '【四手外框圓角簡寫】 A shorthand property for the four border radius properties'),
+(77, 'border-right', 15, 20, '【右邊框綜合屬性】 A shorthand property for all the border-right properties'),
+(78, 'border-right-color', 15, 20, '【右邊框顏色】 Sets the color of the right border'),
+(79, 'border-right-style', 15, 20, '【右邊框樣式】 Sets the style of the right border'),
+(80, 'border-right-width', 15, 20, '【右邊框寬度】 Sets the width of the right border'),
+(81, 'border-spacing', 15, 22, '【相鄰單元格邊框間距】 Sets the distance between the borders of adjacent cells'),
+(82, 'border-start-end-radius', 15, 22, '【行內維度前端圓角】 Sets the radius of the corner between the block-start and the inline-end sides'),
+(83, 'border-start-start-radius', 15, 22, '【行內維度起點圓角】 Sets the radius of the corner between the block-start and the inline-start sides'),
+(84, 'border-style', 15, 20, '【四手邊框樣式】 Sets the style of the four borders'),
+(85, 'border-top', 15, 20, '【上邊框綜合屬性】 A shorthand property for border-top-width, border-top-style and border-top-color'),
+(86, 'border-top-color', 15, 20, '【上邊框顏色】 Sets the color of the top border'),
+(87, 'border-top-left-radius', 15, 20, '【左上圓角】 Defines the radius of the border of the top-left corner'),
+(88, 'border-top-right-radius', 15, 20, '【右上圓角】 Defines the radius of the border of the top-left corner'),
+(89, 'border-top-style', 15, 20, '【上邊框樣式】 Sets the style of the top border'),
+(90, 'border-top-width', 15, 20, '【上邊框寬度】 Sets the width of the top border'),
+(91, 'border-width', 15, 20, '【四手邊框寬度】 Sets the width of the four borders'),
+(92, 'bottom', 17, 23, '【底部邊距定位】 Sets the elements position, from the bottom of its parent element'),
+(93, 'box-decoration-break', 15, 20, '【元素斷行樣式保持】 Sets the behavior of the background and border of an element at page-break'),
+(94, 'box-reflect', 15, 20, '【倒影特效】 The box-reflect property is used to create a reflection of an element'),
+(95, 'box-shadow', 15, 20, '【元素外陰影特效】 Attaches one or more shadows to an element'),
+(96, 'box-sizing', 15, 18, '【盒模型計算規格】 Defines how the width and height of an element are calculated'),
+(97, 'break-after', 16, 22, '【分頁後強制中斷】 Specifies whether or not a page, column, or region-break should occur after the specified element'),
+(98, 'break-before', 16, 22, '【分頁前強制中斷】 Specifies whether or not a page, column, or region-break should occur before the specified element'),
+(99, 'break-inside', 16, 22, '【內嵌元素禁止分頁中斷】 Specifies whether or not a page, column, or region-break should occur inside the specified element'),
+(100, 'caption-side', 16, 22, '【表格標題位置】 Specifies the placement of a table caption'),
+(101, 'caret-color', 15, 20, '【輸入框游標顏色】 Specifies the color of the cursor (caret) in inputs, textareas, or editable elements'),
+(102, '@charset', 16, 18, '【樣式表字元編碼】 Specifies the character encoding used in the style sheet'),
+(103, 'clear', 16, 22, '【清除浮動影響】 Specifies what should happen with the element that is next to a floating element'),
+(104, 'clip', 15, 20, '【絕對定位元素裁剪（不推薦）】 Deprecated in favor of clip-path. Clips an absolutely positioned element'),
+(105, 'clip-path', 15, 20, '【現代元素形狀裁剪】 Clips an element to a basic shape or to an SVG source'),
+(106, 'color', 15, 20, '【文字顏色】 Sets the color of text'),
+(107, 'color-scheme', 15, 20, '【系統主題配色方案】 Indicates which operating system color scheme an element should render with'),
+(108, 'column-count', 16, 22, '【多欄布局欄數】 Specifies the number of columns an element should be divided into'),
+(109, 'column-fill', 16, 22, '【多欄布局填充方式】 Specifies how to fill columns, balanced or not'),
+(110, 'column-gap', 16, 22, '【多欄布局欄間距】 Specifies the gap between the columns'),
+(111, 'column-rule', 16, 22, '【多欄布局分隔線綜合屬性】 A shorthand property for all column-rule properties'),
+(112, 'column-rule-color', 16, 22, '【多欄布局分隔線顏色】 Specifies the color of the rule between columns'),
+(113, 'column-rule-style', 16, 22, '【多欄布局分隔線樣式】 Specifies the style of the rule between columns'),
+(114, 'column-rule-width', 16, 22, '【多欄布局分隔線寬度】 Specifies the width of the rule between columns'),
+(115, 'column-span', 16, 22, '【多欄布局跨欄合併】 Specifies how many columns an element should span across'),
+(116, 'column-width', 16, 22, '【多欄布局最佳欄寬】 Specifies the column width'),
+(117, 'columns', 16, 22, '【多欄布局欄寬與欄數簡寫】 A shorthand property for column-width and column-count'),
+(118, '@container', 16, 22, '【容器查詢規則】 Define styles for elements in container, depending on the container size or style'),
+(119, 'content', 15, 19, '【偽元素生成內容】 Used with the :before and :after pseudo-elements, to insert generated content'),
+(120, 'counter-increment', 15, 19, '【CSS計數器遞增】 Increases or decreases the value of one or more CSS counters'),
+(121, 'counter-reset', 15, 19, '【CSS計數器重設】 Creates or resets one or more CSS counters'),
+(122, 'counter-set', 15, 19, '【CSS計數器設定值】 Creates or sets one or more CSS counters'),
+(123, '@counter-style', 15, 19, '【自訂計數器樣式規則】 Lets you define your own counter styles'),
+(124, 'cursor', 15, 20, '【滑鼠游標樣式】 Specifies the mouse cursor to be displayed when pointing over an element'),
+(125, 'direction', 15, 19, '【文字書寫方向】 Specifies the text direction/writing direction'),
+(126, 'display', 16, 22, '【顯示模式】 Specifies how a certain HTML element should be displayed'),
+(127, 'empty-cells', 15, 20, '【空單元格邊框顯示】 Specifies whether or not to display borders and background on empty cells in a table'),
+(128, 'filter', 15, 20, '【視覺濾鏡特效】 Defines effects (e.g. blurring or color shifting) on an element before the element is displayed'),
+(129, 'flex', 16, 22, '【Flex彈性盒綜合屬性】 A shorthand property for the flex-grow, flex-shrink, and the flex-basis properties'),
+(130, 'flex-basis', 16, 22, '【Flex項目基礎尺寸】 Specifies the initial length of a flexible item'),
+(131, 'flex-direction', 16, 22, '【Flex布局主軸方向】 Specifies the direction of the flexible items'),
+(132, 'flex-flow', 16, 22, '【Flex軸向與換行簡寫】 A shorthand property for the flex-direction and the flex-wrap properties'),
+(133, 'flex-grow', 16, 22, '【Flex項目伸展權重】 Specifies how much the item will grow relative to the rest'),
+(134, 'flex-shrink', 16, 22, '【Flex項目收縮權重】 Specifies how the item will shrink relative to the rest'),
+(135, 'flex-wrap', 16, 22, '【Flex項目換行規則】 Specifies whether the flexible items should wrap or not'),
+(136, 'float', 17, 23, '【傳統元素浮動定位】 Specifies whether an element should float to the left, right, or not at all'),
+(137, 'font', 15, 19, '【字型與排版綜合屬性】 A shorthand property for font-style, font-variant, font-weight, font-size/line-height, and font-family properties'),
+(138, '@font-face', 15, 19, '【自訂外部字型導入】 Specifies a custom font to use to display text'),
+(139, 'font-family', 15, 19, '【指定字型族群】 Specifies the font family for text'),
+(140, 'font-feature-settings', 15, 19, '【OpenType進階字型特性】 Allows control over advanced typographic features in OpenType fonts'),
+(141, 'font-kerning', 15, 19, '【字元微調間距控制】 Controls the usage of the kerning information (how letters are spaced)'),
+(142, 'font-language-override', 15, 19, '【特定語言字元覆蓋】 Controls the usage of language-specific glyphs in a typeface'),
+(143, '@font-palette-values', 15, 19, '【調色盤字型自訂值】 Allows you to customize the default values of a font-palette'),
+(144, 'font-size', 15, 19, '【文字字級大小】 Specifies the font size of text'),
+(145, 'font-size-adjust', 15, 19, '【微調字型比例保持可讀性】 Preserves the readability and size of text when fallback font occurs'),
+(146, 'font-stretch', 15, 19, '【字型寬窄縮放變體】 Selects a normal, condensed, or expanded face from a font family'),
+(147, 'font-style', 15, 19, '【文字斜體樣式】 Specifies the font style for text'),
+(148, 'font-synthesis', 15, 19, '【瀏覽器合成缺失字型】 Controls which missing typefaces (bold or italic) may be synthesized by the browser'),
+(149, 'font-variant', 15, 19, '【小型大寫字母變體簡寫】 Specifies whether or not a text should be displayed in a small-caps font'),
+(150, 'font-variant-alternates', 15, 19, '【替代字形符號控制】 Controls the usage of alternate glyphs associated to alternative names'),
+(151, 'font-variant-caps', 15, 19, '【大寫字母字形變體】 Controls the usage of alternate glyphs for capital letters'),
+(152, 'font-variant-east-asian', 15, 19, '【東亞文字特殊字形控制】 Controls the usage of alternate glyphs for East Asian scripts (e.g Japanese and Chinese)'),
+(153, 'font-variant-ligatures', 15, 19, '【連字符號與上下文變體】 Controls which ligatures and contextual forms are used in textual content'),
+(154, 'font-variant-numeric', 15, 19, '【數字與分數樣式變體】 Controls the usage of alternate glyphs for numbers, fractions, and ordinal markers'),
+(155, 'font-variant-position', 15, 19, '【上下標字母字形位置】 Controls the usage of alternate glyphs of smaller size positioned as superscript or subscript regarding the baseline'),
+(156, 'font-weight', 15, 19, '【文字粗細度】 Specifies the weight of a font'),
+(157, 'gap', 16, 22, '【網格與彈性盒間距】 A shorthand property for the row-gap and the column-gap properties'),
+(158, 'grid', 16, 22, '【Grid網格佈局綜合屬性】 A shorthand property for grid-template-rows, grid-template-columns, grid-template-areas, grid-auto-rows, grid-auto-columns, and grid-auto-flow properties'),
+(159, 'grid-area', 16, 22, '【網格項目命名與範圍簡寫】 Either specifies a name for the grid item, or this property is a shorthand property for grid-row-start, grid-column-start, grid-row-end, and grid-column-end properties'),
+(160, 'grid-auto-columns', 16, 22, '【隱式網格自動行寬】 Specifies a default column size'),
+(161, 'grid-auto-flow', 16, 22, '【網格項目自動流向規則】 Specifies how auto-placed items are inserted in the grid'),
+(162, 'grid-auto-rows', 16, 22, '【隱式網格自動列高】 Specifies a default row size'),
+(163, 'grid-column', 16, 22, '【網格項目跨行範圍簡寫】 A shorthand property for the grid-column-start and the grid-column-end properties'),
+(164, 'grid-column-end', 16, 22, '【網格項目跨行結束線】 Specifies where to end the grid item'),
+(165, 'grid-column-start', 16, 22, '【網格項目跨行起始線】 Specifies where to start the grid item'),
+(166, 'grid-row', 16, 22, '【網格項目跨列範圍簡寫】 A shorthand property for the grid-row-start and the grid-row-end properties'),
+(167, 'grid-row-end', 16, 22, '【網格項目跨列結束線】 Specifies where to end the grid item'),
+(168, 'grid-row-start', 16, 22, '【網格項目跨列起始線】 Specifies where to start the grid item'),
+(169, 'grid-template', 16, 22, '【網格模板網格軌道簡寫】 A shorthand property for the grid-template-rows, grid-template-columns and grid-areas properties'),
+(170, 'grid-template-areas', 16, 22, '【網格具名區域規劃】 Specifies how to display columns and rows, using named grid items'),
+(171, 'grid-template-columns', 16, 22, '【網格行模板與寬度配置】 Specifies the size of the columns, and how many columns in a grid layout'),
+(172, 'grid-template-rows', 16, 22, '【網格列模板與高度配置】 Specifies the size of the rows in a grid layout'),
+(173, 'hanging-punctuation', 15, 19, '【懸掛標點符號控制】 Specifies whether a punctuation character may be placed outside the line box'),
+(174, 'height', 15, 20, '【元素高度】 Sets the height of an element'),
+(175, 'hyphens', 15, 19, '【連字號斷行規則】 Sets how to split words to improve the layout of text'),
+(176, 'hyphenate-character', 15, 19, '【自訂連字號字元】 Sets the character used at the end of line, before a hyphenation break'),
+(177, 'image-rendering', 15, 20, '【圖片縮放渲染演算法】 Specifies the type of algorithm to use for image scaling'),
+(178, '@import', 16, 18, '【外部樣式表智慧導入】 Allows you to import a style sheet into another style sheet'),
+(179, 'initial-letter', 15, 19, '【首字下沉首字放大】 Specifies the size of the initial-letter and optionally the number of lines the initial letter should sink'),
+(180, 'inline-size', 15, 22, '【行內維度尺寸】 Specifies the size of an element in the inline direction'),
+(181, 'inset', 17, 23, '【四手定位邊距簡寫】 Specifies the distance between an element and the parent element'),
+(182, 'inset-block', 17, 23, '【塊級維度雙向定位】 Specifies the distance between an element and the parent element in the block direction'),
+(183, 'inset-block-end', 17, 23, '【塊級維度末端定位】 Specifies the distance between the end of an element and the parent element in the block direction'),
+(184, 'inset-block-start', 17, 23, '【塊級維度前端定位】 Specifies the distance between the start of an element and the parent element in the block direction'),
+(185, 'inset-inline', 17, 23, '【行內維度雙向定位】 Specifies the distance between an element and the parent element in the inline direction'),
+(186, 'inset-inline-end', 17, 23, '【行內維度末端定位】 Specifies the distance between the end of an element and the parent element in the inline direction'),
+(187, 'inset-inline-start', 17, 23, '【行內維度前端定位】 Specifies the distance between the start of an element and the parent element in the inline direction'),
+(188, 'isolation', 17, 23, '【獨立層疊上下文防線】 Defines whether an element must create a new stacking content'),
+(189, 'justify-content', 16, 22, '【主軸項目對齊方式】 Specifies the alignment between the items inside a flexible container when the items do not use all available space'),
+(190, 'justify-items', 16, 22, '【網格行內維度項目對齊】 Is set on the grid container. Specifies the alignment of grid items in the inline direction'),
+(191, 'justify-self', 16, 22, '【個別網格項目行內維度對齊】 Is set on the grid item. Specifies the alignment of the grid item in the inline direction'),
+(192, '@keyframes', 16, 21, '【關鍵影格動畫控制】 Controls the steps in an animation by defining styles for points along the animation sequence'),
+(193, '@layer', 16, 18, '【CSS階層權重控制規則】 Controls how the CSS cascade layers evaluates the order of styles'),
+(194, 'left', 17, 23, '【左側邊距定位】 Specifies the left position of a positioned element'),
+(195, 'letter-spacing', 15, 19, '【字與字間距（字體排版）】 Increases or decreases the space between characters in a text'),
+(196, 'line-break', 15, 19, '【換行斷詞規則（字體排版）】 Specifies how/if to break lines'),
+(197, 'line-height', 15, 19, '【文字行高（字體排版）】 Sets the line height'),
+(198, 'list-style', 15, 18, '【清單樣式綜合屬性】 Sets all the properties for a list in one declaration'),
+(199, 'list-style-image', 15, 18, '【清單項目自訂圖片圖示】 Specifies an image as the list-item marker'),
+(200, 'list-style-position', 15, 18, '【清單項目圖示縮排位置】 Specifies the position of the list-item markers (bullet points)'),
+(201, 'list-style-type', 15, 18, '【清單項目圖示類型】 Specifies the type of list-item marker'),
+(202, 'margin', 15, 20, '【外邊距綜合屬性】 Sets all the margin properties in one declaration'),
+(203, 'margin-block', 15, 22, '【塊級維度雙向外邊距】 Specifies the margin in the block direction'),
+(204, 'margin-block-end', 15, 22, '【塊級維度末端外邊距】 Specifies the margin at the end in the block direction'),
+(205, 'margin-block-start', 15, 22, '【塊級維度前端外邊距】 Specifies the margin at the start in the block direction'),
+(206, 'margin-bottom', 15, 20, '【下外邊距】 Sets the bottom margin of an element'),
+(207, 'margin-inline', 15, 22, '【行內維度雙向外邊距】 Specifies the margin in the inline direction'),
+(208, 'margin-inline-end', 15, 22, '【行內維度末端外邊距】 Specifies the margin at the end in the inline direction'),
+(209, 'margin-inline-start', 15, 22, '【行內維度前端外邊距】 Specifies the margin at the start in the inline direction'),
+(210, 'margin-left', 15, 20, '【左外邊距】 Sets the left margin of an element'),
+(211, 'margin-right', 15, 20, '【右外邊距】 Sets the right margin of an element'),
+(212, 'margin-top', 15, 20, '【上外邊距】 Sets the top margin of an element'),
+(213, 'marker', 15, 20, '【路徑頂點標記圖記】 Points to a marker that will be drawn on all vertices of an element\'s path'),
+(214, 'marker-end', 15, 20, '【路徑末端頂點標記】 Points to a marker that will be drawn on the last vertex of an element\'s path'),
+(215, 'marker-mid', 15, 20, '【路徑中段頂點標記】 Points to a marker that will be drawn on all the middle vertices of an element\'s path'),
+(216, 'marker-start', 15, 20, '【路徑起始頂點標記】 Points to a marker that will be drawn on the first vertex of an element\'s path'),
+(217, 'mask', 15, 20, '【圖形遮罩綜合屬性】 A shorthand property for mask-image, mask-mode, mask-repeat and mask-size'),
+(218, 'mask-clip', 15, 20, '【遮罩裁剪影響範圍】 Specifies which area is affected by a mask image'),
+(219, 'mask-composite', 15, 20, '【多層遮罩圖層混合運算】 Specifies a compositing operation used on the current mask layer with the mask layers below it'),
+(220, 'mask-image', 15, 20, '【遮罩圖片來源】 Specifies an image to be used as a mask layer for an element'),
+(221, 'mask-mode', 15, 20, '【遮罩模式（亮度或Alpha通道）】 Specifies whether the mask layer image is treated as a luminance mask or as an alpha mask'),
+(222, 'mask-origin', 15, 20, '【遮罩圖層基準原點】 Specifies the origin position of a mask layer image'),
+(223, 'mask-position', 15, 20, '【遮罩圖片起點座標】 Sets the starting position of a mask layer image'),
+(224, 'mask-repeat', 15, 20, '【遮罩圖片重複平鋪規則】 Specifies how the mask layer image is repeated'),
+(225, 'mask-size', 15, 20, '【遮罩圖片尺寸控制】 Specifies the size of a mask layer image'),
+(226, 'mask-type', 15, 20, '【SVG遮罩專用模式解碼】 Specifies whether an SVG &lt;mask&gt; element is treated as a luminance or alpha mask'),
+(227, 'max-height', 15, 20, '【元素最大高度限制】 Sets the maximum height of an element'),
+(228, 'max-width', 15, 20, '【元素最大寬度限制】 Sets the maximum width of an element'),
+(229, '@media', 16, 18, '【媒體查詢（響應式斷點核心）】 Sets the style rules for different media types/devices/sizes'),
+(230, 'max-block-size', 15, 22, '【塊級維度最大尺寸防線】 Sets the maximum size of an element in the block direction'),
+(231, 'max-inline-size', 15, 22, '【行內維度最大尺寸防線】 Sets the maximum size of an element in the inline direction'),
+(232, 'min-block-size', 15, 22, '【塊級維度最小尺寸防線】 Sets the minimum size of an element in the block direction'),
+(233, 'min-inline-size', 15, 22, '【行內維度最小尺寸防線】 Sets the minimum size of an element in the inline direction'),
+(234, 'min-height', 15, 20, '【元素最小高度限制】 Sets the minimum height of an element'),
+(235, 'min-width', 15, 20, '【元素最小寬度限制】 Sets the minimum width of an element'),
+(236, 'mix-blend-mode', 15, 20, '【元素與父層背景混合模式】 Specifies how an element\'s content should blend with its direct parent background'),
+(237, '@namespace', 16, 18, '【XML命名空間宣告】 Defines an XML namespace to be used in the style sheet'),
+(238, 'object-fit', 15, 20, '【替換元素圖片縮放模式】 Specifies how the contents of a replaced element should be fitted to the box established by its used height and width'),
+(239, 'object-position', 15, 20, '【替換元素圖片座標定位】 Specifies the alignment of the replaced element inside its box'),
+(240, 'offset', 16, 21, '【路徑軌跡動畫綜合屬性】 A shorthand property for offset-anchor, offset-distance, offset-path, offset-position, and offset-rotate properties'),
+(241, 'offset-anchor', 16, 21, '【路徑軌跡動畫基準點】 Specifies a point on an element that is fixed to the path it is animated along'),
+(242, 'offset-distance', 16, 21, '【路徑軌跡動畫移動距離】 Specifies the position along a path where an animated element is placed'),
+(243, 'offset-path', 16, 21, '【動態移動路徑軌跡】 Specifies the path an element is animated along'),
+(244, 'offset-position', 16, 21, '【路徑軌跡動畫初始位置】 Specifies the initial position of an element along a path'),
+(245, 'offset-rotate', 16, 21, '【路徑軌跡動畫旋轉角度】 Specifies rotation of an element as it is animated along a path'),
+(246, 'opacity', 15, 20, '【元素透明度不透明度】 Sets the opacity level for an element'),
+(247, 'order', 16, 22, '【Flex/Grid項目排列順序】 Sets the order of the flexible item, relative to the rest'),
+(248, 'orphans', 15, 19, '【分頁底端最小留行數】 Sets the minimum number of lines that must be left at the bottom of a page or column'),
+(249, 'outline', 15, 20, '【外輪廓綜合屬性（不佔空間）】 A shorthand property for outline-width, outline-style, and outline-color properties'),
+(250, 'outline-color', 15, 20, '【外輪廓輪廓線顏色】 Sets the color of an outline'),
+(251, 'outline-offset', 15, 20, '【外輪廓線偏移襯距】 Offsets an outline, and draws it beyond the border edge'),
+(252, 'outline-style', 15, 20, '【外輪廓輪廓線樣式】 Sets the style of an outline'),
+(253, 'outline-width', 15, 20, '【外輪廓輪廓線寬度】 Sets the width of an outline'),
+(254, 'overflow', 15, 22, '【內容溢出綜合處理規則】 Specifies what happens if content overflows an element\'s box'),
+(255, 'overflow-anchor', 15, 22, '【捲軸捲動錨定行為】 Specifies whether content in scrollable container should be anchored when new content loads above'),
+(256, 'overflow-wrap', 15, 19, '【長單字溢出強制斷行規則】 Specifies whether or not the browser can break lines with long words, if they overflow the container'),
+(257, 'overflow-x', 15, 22, '【水平方向內容溢出規則】 Specifies whether or not to clip the left/right edges of the content, if it overflows'),
+(258, 'overflow-y', 15, 22, '【垂直方向內容溢出規則】 Specifies whether or not to clip the top/bottom edges of the content, if it overflows'),
+(259, 'overscroll-behavior', 15, 22, '【邊界邊緣捲軸連動行為】 Specifies whether to have scroll chaining or overscroll affordance in x- and y-directions'),
+(260, 'overscroll-behavior-block', 15, 22, '【塊級維度邊緣捲軸連動】 Specifies whether to have scroll chaining or overscroll affordance in the block direction'),
+(261, 'overscroll-behavior-inline', 15, 22, '【行內維度邊緣捲軸連動】 Specifies whether to have scroll chaining or overscroll affordance in the inline direction'),
+(262, 'overscroll-behavior-x', 15, 22, '【水平方向邊緣捲軸連動】 Specifies whether to have scroll chaining or overscroll affordance in x-direction'),
+(263, 'overscroll-behavior-y', 15, 22, '【垂直方向邊緣捲軸連動】 Specifies whether to have scroll chaining or overscroll affordance in y-directions'),
+(264, 'padding', 15, 20, '【內邊距綜合屬性】 A shorthand property for all padding properties'),
+(265, 'padding-block', 15, 22, '【塊級維度雙向內邊距】 Specifies the padding in the block direction'),
+(266, 'padding-block-end', 15, 22, '【塊級維度末端內邊距】 Specifies the padding at the end in the block direction'),
+(267, 'padding-block-start', 15, 22, '【塊級維度前端內邊距】 Specifies the padding at the start in the block direction'),
+(268, 'padding-bottom', 15, 20, '【下內邊距】 Sets the bottom padding of an element'),
+(269, 'padding-inline', 15, 22, '【行內維度雙向內邊距】 Specifies the padding in the inline direction'),
+(270, 'padding-inline-end', 15, 22, '【行內維度末端內邊距】 Specifies the padding at the end in the inline direction'),
+(271, 'padding-inline-start', 15, 22, '【行內維度前端內邊距】 Specifies the padding at the start in the inline direction'),
+(272, 'padding-left', 15, 20, '【左內邊距】 Sets the left padding of an element'),
+(273, 'padding-right', 15, 20, '【右內邊距】 Sets the right padding of an element'),
+(274, 'padding-top', 15, 20, '【上內邊距】 Sets the top padding of an element'),
+(275, '@page', 16, 18, '【列印頁面自訂配置】 Customizes the dimension, orientation, and margins of printed pages'),
+(276, 'page-break-after', 16, 22, '【列印分頁後強制中斷（舊）】 Sets the page-break behavior after an element. Replaced by break-after property'),
+(277, 'page-break-before', 16, 22, '【列印分頁前強制中斷（舊）】 Sets the page-break behavior before an element. Replaced by break-before property'),
+(278, 'page-break-inside', 16, 22, '【列印區塊內禁止中斷（舊）】 Sets the page-break behavior inside an element. Replaced by break-inside property'),
+(279, 'paint-order', 15, 20, '【SVG向量與文字繪製順序】 Sets the order of how an SVG element or text is painted'),
+(280, 'perspective', 17, 21, '【3D視覺立體透視縱深】 Gives a 3D-positioned element some perspective'),
+(281, 'perspective-origin', 17, 21, '【3D視覺消失點中心座標】 Defines at which position the user is looking at the 3D-positioned element'),
+(282, 'place-content', 16, 22, '【主軸與交錯軸內容對齊縮寫】 Specifies align-content and justify-content property values for flexbox and grid layouts'),
+(283, 'place-items', 16, 22, '【單行項目對齊綜合縮寫】 Specifies align-items and justify-items property values for grid layouts'),
+(284, 'place-self', 16, 22, '【個別項目對齊綜合縮寫】 Specifies align-self and justify-self property values for grid layouts'),
+(285, 'pointer-events', 15, 18, '【滑鼠指標事件觸發控制】 Defines whether or not an element reacts to pointer events'),
+(286, 'position', 17, 23, '【網格與空間定位模式】 Specifies the type of positioning method used for an element (static, relative, absolute or fixed)'),
+(287, '@property', 16, 18, '【自訂CSS原生變數屬性規則】 Defines custom CSS properties directly in the stylesheet without having to run any JavaScript'),
+(288, 'quotes', 15, 19, '【內嵌引號樣式】 Sets the type of quotation marks for embedded quotations'),
+(289, 'resize', 15, 20, '【視窗尺寸縮放控制】 Defines if (and how) an element is resizable by the user'),
+(290, 'right', 17, 23, '【右側邊距定位】 Specifies the right position of a positioned element'),
+(291, 'rotate', 16, 21, '【獨立旋轉變體】 Specifies the rotation of an element'),
+(292, 'row-gap', 16, 22, '【網格列間距】 Specifies the gap between the grid rows'),
+(293, 'scale', 16, 21, '【獨立縮放變體】 Specifies the size of an element by scaling up or down'),
+(294, '@scope', 14, 18, '【DOM子樹作用域限定規則】 Allows you to select elements in specific DOM subtrees and target elements precisely without writing overly-specific selectors'),
+(295, 'scroll-behavior', 15, 22, '【網格滑動平滑動畫行為】 Specifies whether to smoothly animate the scroll position in a scrollable box, instead of a straight jump'),
+(296, 'scroll-margin', 15, 22, '【滾動捕捉外邊襯距】 Specifies the margin between the snap position and the container'),
+(297, 'scroll-margin-block', 15, 22, '【塊級維度雙向滾動襯距】 Specifies the margin between the snap position and the container in the block direction'),
+(298, 'scroll-margin-block-end', 15, 22, '【塊級維度末端滾動襯距】 Specifies the end margin between the snap position and the container in the block direction'),
+(299, 'scroll-margin-block-start', 15, 22, '【塊級維度前端滾動襯距】 Specifies the start margin between the snap position and the container in the block direction'),
+(300, 'scroll-margin-bottom', 15, 22, '【底部滾動捕捉襯距】 Specifies the margin between the snap position on the bottom side and the container'),
+(301, 'scroll-margin-inline', 15, 22, '【行內維度雙向滾動襯距】 Specifies the margin between the snap position and the container in the inline direction'),
+(302, 'scroll-margin-inline-end', 15, 22, '【行內維度末端滾動襯距】 Specifies the end margin between the snap position and the container in the inline direction'),
+(303, 'scroll-margin-inline-start', 15, 22, '【行內維度前端滾動襯距】 Specifies the start margin between the snap position and the container in the inline direction'),
+(304, 'scroll-margin-left', 15, 22, '【左側滾動捕捉襯距】 Specifies the margin between the snap position on the left side and the container'),
+(305, 'scroll-margin-right', 15, 22, '【右側滾動捕捉襯距】 Specifies the margin between the snap position on the right side and the container'),
+(306, 'scroll-margin-top', 15, 22, '【頂部滾動捕捉襯距】 Specifies the margin between the snap position on the top side and the container'),
+(307, 'scroll-padding', 15, 22, '【滾動捕捉內邊襯距】 Specifies the distance from the container to the snap position on the child elements'),
+(308, 'scroll-padding-block', 15, 22, '【塊級維度雙向滾動內襯】 Specifies the distance in block direction from the container to the snap position'),
+(309, 'scroll-padding-block-end', 15, 22, '【塊級維度末端滾動內襯】 Specifies the distance in block direction from the end of the container to the snap position'),
+(310, 'scroll-padding-block-start', 15, 22, '【塊級維度前端滾動內襯】 Specifies the distance in block direction from the start of the container to the snap position'),
+(311, 'scroll-padding-bottom', 15, 22, '【底部滾動捕捉內襯】 Specifies the distance from the bottom of the container to the snap position'),
+(312, 'scroll-padding-inline', 15, 22, '【行內維度雙向滾動內襯】 Specifies the distance in inline direction from the container to the snap position'),
+(313, 'scroll-padding-inline-end', 15, 22, '【行內維度末端滾動內襯】 Specifies the distance in inline direction from the end of the container to the snap position'),
+(314, 'scroll-padding-inline-start', 15, 22, '【行內維度前端滾動內襯】 Specifies the distance in inline direction from the start of the container to the snap position'),
+(315, 'scroll-padding-left', 15, 22, '【左側滾動捕捉內襯】 Specifies the distance from the left side of the container to the snap position'),
+(316, 'scroll-padding-right', 15, 22, '【右側滾動捕捉內襯】 Specifies the distance from the right side of the container to the snap position'),
+(317, 'scroll-padding-top', 15, 22, '【頂部滾動捕捉內襯】 Specifies the distance from the top of the container to the snap position'),
+(318, 'scroll-snap-align', 15, 22, '【滾動停頓點對齊基準】 Specifies where to position elements when the user stops scrolling'),
+(319, 'scroll-snap-stop', 15, 22, '【快速滑動對其停頓限制】 Specifies scroll behaviour after fast swipe on trackpad or touch screen'),
+(320, 'scroll-snap-type', 15, 22, '【滾動容器捕捉模式設定】 Specifies how snap behaviour should be when scrolling'),
+(321, 'scrollbar-color', 15, 20, '【瀏覽器捲軸客製化配色】 Specifies the color of the scrollbar of an element'),
+(322, 'shape-outside', 15, 19, '【不規則多邊形文字環繞】 Defines a shape for wrapping for the inline content'),
+(323, '@starting-style', 16, 21, '【元素初次加載初始樣式規則】 Defines an element\'s starting styles before the element gets its first style update'),
+(324, '@supports', 14, 18, '【瀏覽器特徵與相容性測試】 Used to test whether a browser supports a CSS feature'),
+(325, 'tab-size', 15, 19, '【Tab縮排空格寬度】 Specifies the width of a tab character'),
+(326, 'table-layout', 16, 22, '【表格儲存格佈局演算法】 Defines the algorithm used to lay out table cells, rows, and columns'),
+(327, 'text-align', 15, 19, '【文字水平對齊方式】 Specifies the horizontal alignment of text'),
+(328, 'text-align-last', 15, 19, '【末行文字對齊規則】 Describes how the last line of a block or a line right before a forced line break is aligned'),
+(329, 'text-combine-upright', 15, 19, '【縱向排版直書文字合併】 Specifies the combination of multiple characters into the space of a single character'),
+(330, 'text-decoration', 15, 20, '【文字裝飾線（底線/刪除線）】 Specifies the decoration added to text'),
+(331, 'text-decoration-color', 15, 20, '【文字裝飾線顏色】 Specifies the color of the text-decoration'),
+(332, 'text-decoration-line', 15, 20, '【文字裝飾線類型位置】 Specifies the type of line in a text-decoration'),
+(333, 'text-decoration-style', 15, 20, '【文字裝飾線條樣式（虛線/實線）】 Specifies the style of the line in a text decoration'),
+(334, 'text-decoration-thickness', 15, 20, '【文字裝飾線條粗細】 Specifies the thickness of the decoration line'),
+(335, 'text-emphasis', 15, 19, '【文字強調旁註綜合屬性】 A shorthand property for the text-emphasis-style and text-emphasis-color properties'),
+(336, 'text-emphasis-color', 15, 19, '【文字強調旁註顏色】 Specifies the color of emphasis marks'),
+(337, 'text-emphasis-position', 15, 19, '【文字強調旁註擺放位置】 Specifies the position of emphasis marks'),
+(338, 'text-emphasis-style', 15, 19, '【文字強調旁註標記樣式】 Specifies the style of emphasis marks'),
+(339, 'text-indent', 15, 19, '【文字首行縮排】 Specifies the indentation of the first line in a text-block'),
+(340, 'text-justify', 15, 19, '【文字兩端對齊演算法調整】 Specifies the justification method used when text-align is \"justify\"'),
+(341, 'text-orientation', 15, 19, '【直書文字字元旋轉方向】 Defines the orientation of characters in a line'),
+(342, 'text-overflow', 15, 19, '【文字溢出處理（省略號控制）】 Specifies what should happen when text overflows the containing element'),
+(343, 'text-shadow', 15, 20, '【文字陰影特效】 Adds shadow to text'),
+(344, 'text-transform {', 15, 19, '【文字大小寫轉換控制】 Controls the capitalization of text'),
+(345, 'text-underline-offset', 15, 20, '【底線與文字基準線襯距】 Specifies the offset distance of the underline text decoration'),
+(346, 'text-underline-position', 15, 20, '【底線擺放對齊位置】 Specifies the position of the underline text decoration'),
+(347, 'top', 17, 23, '【頂部邊距定位】 Specifies the top position of a positioned element'),
+(348, 'transform', 16, 21, '【2D/3D矩陣空間變形】 Applies a 2D or 3D transformation to an element'),
+(349, 'transform-origin', 16, 21, '【空間變形基準點（中心點）】 Allows you to change the position on transformed elements'),
+(350, 'transform-style', 16, 21, '【3D空間嵌套元素渲染模式】 Specifies how nested elements are rendered in 3D space'),
+(351, 'transition', 16, 21, '【平滑過渡動畫綜合屬性】 A shorthand property for all transition properties'),
+(352, 'transition-delay', 16, 21, '【過渡動畫延遲觸發時間】 Specifies when the transition effect will start'),
+(353, 'transition-duration', 16, 21, '【過渡動畫補間狀態總耗時】 Specifies how many seconds or milliseconds a transition effect takes to complete'),
+(354, 'transition-property', 16, 21, '【觸發過渡動畫的特定CSS屬性】 Specifies the name of the CSS property the transition effect is for'),
+(355, 'transition-timing-function', 16, 21, '【過渡動畫速度曲線（貝茲曲線）】 Specifies the speed curve of the transition effect'),
+(356, 'translate', 16, 21, '【獨立位移變體】 Specifies the position of an element'),
+(357, 'unicode-bidi', 15, 19, '【雙向文字雙軌處理】 Used together with the direction property to set or return whether the text should be overridden to support multiple languages'),
+(358, 'user-select', 15, 20, '【網頁文字禁止或允許選取】 Specifies whether the text of an element can be selected'),
+(359, 'vertical-align', 15, 19, '【行內元素垂直對齊基線】 Sets the vertical alignment of an element'),
+(360, 'visibility', 15, 20, '【元素顯現與隱藏（留保留空間）】 Specifies whether or not an element is visible'),
+(361, 'white-space', 15, 19, '【空白與換行字元處理規則】 Specifies how white-space inside an element is handled'),
+(362, 'widows', 15, 19, '【分頁頂端最小留行數防線】 Sets the minimum number of lines that must be left at the top of a page or column'),
+(363, 'width', 15, 20, '【元素總寬度】 Sets the width of an element'),
+(364, 'word-break', 15, 19, '【亞洲與西洋文字斷詞規則】 Specifies how words should break when reaching the end of a line'),
+(365, 'word-spacing', 15, 19, '【單字與單字間距補白】 Increases or decreases the space between words in a text'),
+(366, 'word-wrap', 15, 19, '【超長單字自動折行包裝】 Allows long, unbreakable words to be broken and wrap to the next line'),
+(367, 'writing-mode', 15, 19, '【網格直書橫排排版軸向】 Specifies whether lines of text are laid out horizontally or vertically'),
+(368, 'z-index', 17, 23, '【垂直軸圖層重疊順序流水號】 Sets the stack order of a positioned element'),
+(369, 'zoom', 15, 20, '【網頁元素非標準比例縮放】 Specifies the zoom factor for an element. An element can be zoomed in and out'),
+(370, 'element', 14, 18, '【元素/標籤選擇器】 Selects all elements of the specified tag type (e.g. p selects all <p> elements)'),
+(371, '#id', 14, 18, '【ID選擇器】 Selects the unique element with a specific id attribute (e.g. #firstname selects id=\"firstname\")'),
+(372, '*', 14, 18, '【全域選擇器】 Selects all elements in the entire document'),
+(373, '.class', 14, 18, '【類別選擇器】 Selects all elements with a specific class attribute (e.g. .intro selects class=\"intro\")'),
+(374, 'element.class', 14, 18, '【交集選擇器（限定標籤類別）】 Selects specified tags with a specific class (e.g. p.intro selects <p> with class=\"intro\")'),
+(375, '[attribute]', 14, 18, '【屬性選擇器（存在性）】 Selects all elements with a given attribute set (e.g. [lang] selects all elements with a lang attribute)'),
+(376, '[attribute=value]', 14, 18, '【屬性選擇器（精確值）】 Selects all elements with a specific exact attribute value (e.g. [lang=\"it\"])'),
+(377, '[attribute~=value]', 14, 18, '【屬性選擇器（包含單字）】 Selects elements with an attribute value containing a specified whole word (e.g. [title~=\"flower\"])'),
+(378, '[attribute|=value]', 14, 18, '【屬性選擇器（特定字首/連字號）】 Selects elements with an attribute value equal to or starting with the value followed by a hyphen (e.g. [lang|=\"en\"])'),
+(379, '[attribute^=value]', 14, 18, '【屬性選擇器（指定開頭）】 Selects elements with an attribute value that begins with a specified substring (e.g. [href^=\"https\"])'),
+(380, '[attribute$=value]', 14, 18, '【屬性選擇器（指定結尾）】 Selects elements with an attribute value that ends with a specified substring (e.g. [href$=\".pdf\"])'),
+(381, '[attribute*=value]', 14, 18, '【屬性選擇器（包含子字串）\r\n】 Selects elements with an attribute value containing a specified substring anywhere (e.g. [href*=\"w3schools\"])'),
+(382, '&', 14, 18, '【CSS原生嵌套選擇器（Nesting）】 Applies styles for an element within the context of another element in modern native CSS nesting'),
+(383, 'Child combinator (>)', 14, 18, '【子元素組合選擇器】 Selects every element that is a direct child of the specified parent element (e.g. div > p selects only direct <p> inside <div>)'),
+(384, 'Descendant combinator (space)', 14, 18, '【後代元素組合選擇器】 Selects all specified elements inside the target ancestor elements, regardless of nesting depth (e.g. div p)'),
+(385, 'Namespace separator (|)', 14, 18, '【XML命名空間分隔選擇器】 Selects elements within a specific declared XML namespace (e.g. ns|h2 selects <h2> inside namespace ns)'),
+(386, 'Next-sibling combinator (+)', 14, 18, '【相鄰兄弟組合選擇器】 Selects the very first specified sibling element that is placed immediately after the target element (e.g. div + p)'),
+(387, 'Selector list (,,)', 14, 18, '【群組選擇器（並集）】 Selects all unique matching elements in the comma-separated list to share the same styles (e.g. div, p)'),
+(388, 'Subsequent-sibling combinator (~)', 14, 18, '【通用兄弟組合選擇器】 Selects all specified sibling elements that are preceded by the target element anywhere on the same level (e.g. p ~ ul)'),
+(389, ':active', 14, 18, '【偽類・滑鼠點擊激活狀態】 Selects the active link (being clicked on)'),
+(390, ':any-link', 14, 18, '【偽類・任何超連結標籤】 Selects any <a> or <area> element with an href attribute'),
+(391, ':auto-fill', 14, 18, '【偽類・瀏覽器自動填入狀態】 Selects any <input> element with its value autofilled by the browser'),
+(392, ':checked', 14, 18, '【偽類・核取方塊已勾選狀態】 Matches any <input> or <option> element that is checked'),
+(393, ':default', 14, 18, '【偽類・預設選擇表單元件】 Selects form elements that are default in a group of related elements'),
+(394, ':defined', 14, 18, '【偽類・已定義標準/自訂元素】 Selects any element that has been defined (standard or custom elements)'),
+(395, ':dir()', 14, 18, '【偽類・指定文字排列書寫方向】 Selects any element with the specified text direction (e.g. :dir(rtl))'),
+(396, ':disabled', 14, 18, '【偽類・禁用狀態表單元件】 Selects any element that is disabled. Most used for form elements'),
+(397, ':empty', 14, 18, '【偽類・無任何子元素的空標籤】 Selects any element that has no children (including text nodes)'),
+(398, ':enabled', 14, 18, '【偽類・啟用狀態表單元件】 Selects any element that is enabled. Most used for form elements'),
+(399, ':first', 14, 18, '【偽類・列印文件的第一頁】 Represents the first page of a printed document (used with @page rule)'),
+(400, ':first-child', 14, 18, '【偽類・結構第一個子元素】 Selects the element that is the first child of its parent'),
+(401, ':first-of-type', 14, 18, '【偽類・結構同類型第一個元素】 Selects the first element of its type among a group of sibling elements'),
+(402, ':focus', 14, 18, '【偽類・游標聚焦狀態欄位】 Selects the element that gets focus. Most used for form elements'),
+(403, ':focus-visible', 14, 18, '【偽類・鍵盤導覽聚焦狀態】 Selects the element that gets focus via keyboard navigation only'),
+(404, ':focus-within', 14, 18, '【偽類・內部子元素聚焦狀態】 Matches an element if the element or any of its descendants gets focus'),
+(405, ':fullscreen', 14, 18, '【偽類・全螢幕模式元素】 Selects any element that is currently in full-screen mode'),
+(406, ':has()', 14, 18, '【偽類・父選擇器（包含特定子元素）】 Selects an element if it contains specified elements (e.g. h2:has(+p))'),
+(407, ':hover', 14, 18, '【偽類・滑鼠懸停狀態】 Selects element on mouse over'),
+(408, ':in-range', 14, 18, '【偽類・數值在合法範圍內欄位】 Select any <input> element with a value within the specified range limit'),
+(409, ':indeterminate', 14, 18, '【偽類・狀態不確定表單元件】 Selects any form element that is in an indeterminate state'),
+(410, ':invalid', 14, 18, '【偽類・未通過資料驗證欄位】 Selects invalid form elements'),
+(411, ':is()', 14, 18, '【偽類・智慧組合匹配選擇器】 Selects all elements matching any of the selector list (e.g. :is(ul, ol))'),
+(412, ':lang()', 14, 18, '【偽類・指定語系屬性元素】 Selects any element with a lang attribute equal to specified value'),
+(413, ':last-child', 14, 18, '【偽類・結構最後一個子元素】 Selects any element that is the last child of its parent'),
+(414, ':last-of-type', 14, 18, '【偽類・結構同類型最後一個元素】 Selects any element that is the last element of its type among siblings'),
+(415, ':left', 14, 18, '【偽類・列印文件所有左側頁】 Represents all left-hand pages of a printed document (used with @page rule)'),
+(416, ':link', 14, 18, '【偽類・未造訪過的超連結】 Selects any unvisited link'),
+(417, ':modal', 14, 18, '【偽類・獨佔互動視窗模式元素】 Selects the element that is in a modal state'),
+(418, ':not()', 14, 18, '【偽類・否定/反向選擇器】 Selects any element that is not the specified element (e.g. :not(p))'),
+(419, ':nth-child()', 14, 18, '【偽類・結構第 N 個子元素定位】 Selects any element that is the nth child of its parent'),
+(420, ':nth-last-child()', 14, 18, '【偽類・結構倒數第 N 個子元素】 Selects any element that is the nth child of its parent, counting from the end'),
+(421, ':nth-last-of-type()', 14, 18, '【偽類・同類型倒數第 N 個元素】 Selects any element that is the nth of its type, counting from the end'),
+(422, ':nth-of-type()', 14, 18, '【偽類・結構同類型第 N 個元素】 Selects any element that is the nth element of its type among siblings'),
+(423, ':only-child', 14, 18, '【偽類・獨生子元素（唯一子元素）】 Selects any element that is the only child of its parent'),
+(424, ':only-of-type', 14, 18, '【偽類・同類型中唯一子元素】 Selects any element that is the only element of its type among siblings'),
+(425, ':optional', 14, 18, '【偽類・選填表單欄位】 Selects any input elements without a \"required\" attribute'),
+(426, ':out-of-range', 14, 18, '【偽類・數值超出合法範圍欄位】 Selects any <input> element with a value outside the specified range limit'),
+(427, ':placeholder-shown', 14, 18, '【偽類・正顯示提示字表單欄位】 Selects any input currently displaying placeholder text'),
+(428, ':popover-open', 14, 18, '【偽類・正開啟彈出視窗元素】 Selects any element that is in a showing popover state'),
+(429, ':read-only', 14, 18, '【偽類・唯讀屬性表單欄位】 Selects input elements with the \"readonly\" attribute specified'),
+(430, ':read-write', 14, 18, '【偽類・可讀寫可編輯欄位】 Selects editable input elements'),
+(431, ':required', 14, 18, '【偽類・必填屬性表單欄位】 Selects input elements with the \"required\" attribute specified'),
+(432, ':right', 14, 18, '【偽類・列印文件所有右側頁】 Represents all right-hand pages of a printed document (used with @page rule)'),
+(433, ':root', 14, 18, '【偽類・網頁最頂層根元素】 Selects the document\'s root element (ideal for declaring CSS variables)'),
+(434, ':scope', 14, 18, '【偽類・限定作用域參考基準點】 Selects elements that are a reference point, or scope, for selectors'),
+(435, ':state()', 14, 18, '【偽類・自訂元素特定自訂狀態】 Selects custom elements that have the specified custom state'),
+(436, ':target', 14, 18, '【偽類・當前URL錨點作用目標】 Selects the current active target element matching the URL hash'),
+(437, ':user-invalid', 14, 18, '【偽類・使用者互動後判定不合法欄位】 Selects form element with an invalid value after user interaction'),
+(438, ':user-valid', 14, 18, '【偽類・使用者互動後判定合法欄位】 Selects form element with a valid value after user interaction'),
+(439, ':valid', 14, 18, '【偽類・通過資料驗證欄位】 Selects all input elements with a valid value'),
+(440, ':visited', 14, 18, '【偽類・已造訪過的超連結】 Selects all visited links'),
+(441, ':where()', 14, 18, '【偽類・低特異度匹配組合器（不計權重）】 Selects elements matching selector list without increasing specificity (e.g. :where(ol, ul))'),
+(442, '::after', 14, 19, '【偽元素・後置生成內容】 Inserts something after the content of the specified element'),
+(443, '::backdrop', 14, 19, '【偽元素・對話框背景遮罩】 Styles the viewbox behind a dialog box or popover element'),
+(444, '::before', 14, 19, '【偽元素・前置生成內容】 Inserts something before the content of the specified element'),
+(445, '::file-selector-button', 14, 19, '【偽元素・檔案上傳按鈕】 Selects any button of type <input type=\"file\">'),
+(446, '::first-letter', 14, 19, '【偽元素・首字放大裝飾】 Selects the first letter of every <p> element'),
+(447, '::first-line', 14, 19, '【偽元素・第一個文字行】 Selects the first line of every <p> element'),
+(448, '::grammar-error', 14, 19, '【偽元素・語法錯誤標記文字】 Styles a text that the browser has flagged as grammatically incorrect'),
+(449, '::highlight()', 14, 19, '【偽元素・自訂反白高亮區域】 Selects a custom highlight (e.g. ::highlight(custom-name))');
+INSERT INTO `css_terms` (`id`, `term_name`, `category1_id`, `category2_id`, `description`) VALUES
+(450, '::marker', 14, 19, '【偽元素<li>清單項目符號】 Selects the markers of list items'),
+(451, '::placeholder', 14, 19, '【偽元素・輸入框提示字樣式】 Styles the placeholder text of <input> or <textarea> elements'),
+(452, '::selection', 14, 19, '【偽元素・使用者反白選取文字】 Styles the user-selected text'),
+(453, '::spelling-error', 14, 19, '【偽元素・拼字錯誤標記文字】 Styles a text that the browser has flagged as incorrectly spelled'),
+(454, '::view-transition', 14, 19, '【偽元素・視圖過渡轉場根覆蓋層】 Represents the root of the view transitions overlay, which contains all view transitions on the page'),
+(455, '::view-transition-group', 14, 19, '【偽元素・單個視圖過渡快照組】 Represents a single view transition snapshot group'),
+(456, '::view-transition-image-pair', 14, 19, '【偽元素・視圖過渡前後狀態容器】 Represents a container for a view transition\'s old and new view states'),
+(457, '::view-transition-new', 14, 19, '【偽元素・視圖過渡新狀態視圖】 Represents the new view state of a view transition'),
+(458, '::view-transition-old', 14, 19, '【偽元素・視圖過渡舊狀態視圖】 Represents the old view state of a view transition'),
+(459, 'acos()', 16, 18, '【CSS三角函數・反餘弦】 Returns the inverse cosine of a number between -1 and 1'),
+(460, 'asin()', 16, 18, '【CSS三角函數・反正弦】 Returns the inverse sine of a number between -1 and 1'),
+(461, 'atan()', 16, 18, '【CSS三角函數・反正切】 Returns the inverse tangent of a number between -infinity and infinity'),
+(462, 'atan2()', 16, 18, '【CSS三角函數・兩個值的反正切】 Returns the inverse tangent of two values between -infinity and infinity'),
+(463, 'attr()', 15, 18, '【擷取HTML標籤屬性值】 Returns the value of an attribute of the selected element'),
+(464, 'blur()', 15, 21, '【視覺濾鏡・毛玻璃模糊】 Applies a blur effect to an element'),
+(465, 'brightness()', 15, 21, '【視覺濾鏡・影像亮度調整】 Adjusts the brightness of an element (brighter or darker)'),
+(466, 'calc()', 15, 18, '【動態數學表達式計算】 Allows you to perform calculations to determine CSS property values'),
+(467, 'circle()', 15, 18, '【路徑裁剪・正圓形函數】 Defines a circle'),
+(468, 'clamp()', 16, 22, '【流式響應式範圍界限控制】 Sets a value that will adjust responsively between a minimum value and a maximum value depending on the viewport size'),
+(469, 'color()', 15, 20, '【指定色彩空間顏色】 Allows a color to be specified in a particular, specified color space'),
+(470, 'color-mix()', 15, 20, '【動態混合兩種顏色】 Mixes two color values in a given color space, by a given amount'),
+(471, 'conic-gradient()', 15, 20, '【圓錐漸層色彩】 Creates a conic gradient'),
+(472, 'contrast()', 15, 21, '【視覺濾鏡・對比度調整】 Adjusts the contrast of an element'),
+(473, 'cos()', 16, 18, '【CSS三角函數・餘弦值】 Returns the cosine of an angle'),
+(474, 'counter()', 15, 19, '【CSS計數器單層值解碼】 Returns the current value of the named counter'),
+(475, 'counters()', 15, 19, '【CSS計數器嵌套雙層值解碼】 Returns the current values of the named and nested counters'),
+(476, 'cubic-bezier()', 16, 21, '【貝茲曲線動畫速度曲線】 Defines a Cubic Bezier curve'),
+(477, 'drop-shadow()', 15, 21, '【視覺濾鏡・高質感真實陰影】 Applies a drop shadow effect to an image'),
+(478, 'ellipse()', 15, 18, '【路徑裁剪・橢圓形函數】 Defines an ellipse'),
+(479, 'exp()', 16, 18, '【CSS數學函數・自然常數指數】 Returns E raised to the power of the specified number x'),
+(480, 'fit-content()', 16, 22, '【智慧內容長度自適應尺寸】 Allows you to size an element based on its content'),
+(481, 'grayscale()', 15, 21, '【視覺濾鏡・灰階黑白轉換】 Converts an image to grayscale'),
+(482, 'hsl() / hsla()', 15, 20, '【HSL色彩變體模型】 Defines a color using the Hue-Saturation-Lightness model; with an optional alpha component'),
+(483, 'hue-rotate()', 15, 21, '【視覺濾鏡・色相旋轉變色】 Applies a color rotation to an element'),
+(484, 'hwb()', 15, 20, '【HWB色彩變體模型】 Defines a color using the Hue-Whiteness-Blackness model; with an optional alpha component'),
+(485, 'hypot()', 16, 18, '【CSS數學函數・平方和開根號】 Returns the square root of the sum of squares of its parameters'),
+(486, 'inset()', 17, 23, '【路徑裁剪・矩形內襯範圍】 Defines a rectangle at the specified inset distances from each side of the reference box'),
+(487, 'invert()', 15, 21, '【視覺濾鏡・色彩反轉負片】 Inverts the color of an image'),
+(488, 'lab()', 15, 20, '【CIE LAB色彩變體空間】 Specifies a color in the CIE L*a*b color space'),
+(489, 'lch()', 15, 20, '【LCH高精度色彩空間】 Specifies a color in the LCH (Lightness-Chroma-Hue) color space'),
+(490, 'light-dark()', 15, 20, '【系統深淺色主題自動切換】 Returns the first value if the user has set a light theme, and the second value if dark theme'),
+(491, 'linear-gradient()', 15, 20, '【線性漸層色彩】 Creates a linear gradient'),
+(492, 'log()', 16, 18, '【CSS數學函數・對數計算】 Returns the natural logarithm of a specified number, or the logarithm to the specified base'),
+(493, 'matrix()', 16, 21, '【2D空間變形矩陣】 Defines a 2D transformation, using a matrix of six values'),
+(494, 'matrix3d()', 16, 21, '【3D空間變形矩陣】 Defines a 3D transformation, using a 4x4 matrix of 16 values'),
+(495, 'max()', 15, 18, '【動態數學最大值調度】 Uses the largest value, from a comma-separated list of values, as the property value'),
+(496, 'min()', 15, 18, '【動態數學最小值調度】 Uses the smallest value, from a comma-separated list of values, as the property value'),
+(497, 'minmax()', 16, 22, '【Grid網格專用尺寸邊界函數】 Defines a size range greater than or equal to a min value and less than or equal to a max value'),
+(498, 'mod()', 16, 18, '【CSS數學函數・取餘數（同號）】 Returns the remainder left over when a number is divided by another number'),
+(499, 'oklab()', 15, 20, '【OKLAB知覺均勻色彩空間】 Specifies a color in the OKLAB color space'),
+(500, 'oklch()', 15, 20, '【OKLCH知覺均勻色相空間】 Specifies a color in the OKLCH color space'),
+(501, 'opacity()', 15, 21, '【視覺濾鏡・透明度動畫控制】 Applies an opacity effect to an element'),
+(502, 'perspective()', 17, 21, '【3D變形立體矩陣透視】 Defines a perspective view for a 3D transformed element'),
+(503, 'polygon()', 15, 18, '【路徑裁剪・不規則多邊形】 Defines a polygon'),
+(504, 'pow()', 16, 18, '【CSS數學函數・乘方冪計算】 Returns the value of a number (x) raised to the power of another number (y)'),
+(505, 'radial-gradient()', 15, 20, '【放射性/圓心漸層色彩】 Creates a radial gradient'),
+(506, 'ray()', 16, 21, '【路徑動畫光束移動路徑】 Defines the offset-path line segment that an animated element should follow'),
+(507, 'rem()', 16, 18, '【CSS數學函數・取餘數（異號）】 Returns the remainder left over when a number is divided by another number'),
+(508, 'repeat()', 16, 22, '【Grid網格欄位重複陣列】 Repeats a set of columns or rows in a grid layout'),
+(509, 'repeating-conic-gradient()', 15, 20, '【重複圓錐漸層色彩】 Repeats a conic gradient'),
+(510, 'repeating-linear-gradient()', 15, 20, '【重複線性漸層色彩】 Repeats a linear gradient'),
+(511, 'repeating-radial-gradient()', 15, 20, '【重複放射性漸層色彩】 Repeats a radial gradient'),
+(512, 'rgb() / rgba()', 15, 20, '【RGB標準三原色變體模型】 Defines colors using the Red-Green-Blue model; with an optional alpha component'),
+(513, 'rotate()', 16, 21, '【2D平面旋轉變形】 Defines a 2D rotation of an element'),
+(514, 'rotate3d()', 16, 21, '【3D立體旋轉變形】 Defines a 3D rotation of an element'),
+(515, 'rotateX()', 16, 21, '【3D水平軸旋轉變形】 Defines a 3D rotation of an element around the x-axis'),
+(516, 'rotateY()', 16, 21, '【3D垂直軸旋轉變形】 Defines a 3D rotation of an element around the y-axis'),
+(517, 'rotateZ()', 16, 21, '【3D深度軸旋轉變形】 Defines a 3D rotation of an element around the z-axis'),
+(518, 'round()', 16, 18, '【CSS數學函數・智慧四捨五入/無條件進位】 Rounds a number according to the specified rounding-strategy'),
+(519, 'saturate()', 15, 21, '【視覺濾鏡・色彩飽和度調整】 Adjusts the saturation (color intensity) of an element'),
+(520, 'scale()', 16, 21, '【2D平面縮放變形】 Defines a 2D scaling of an element'),
+(521, 'scale3d()', 16, 21, '【3D立體空間縮放變形】 Defines a 3D scaling of an element'),
+(522, 'scaleX()', 16, 21, '【2D水平方向寬度縮放】 Scales an element horizontally'),
+(523, 'scaleY()', 16, 21, '【2D垂直方向高度縮放】 Scales an element vertically'),
+(524, 'sepia()', 15, 21, '【視覺濾鏡・復古懷舊褐色轉換】 Converts an image to sepia'),
+(525, 'sin()', 16, 18, '【CSS三角函數・正弦值】 Returns the sine of a number (angle)'),
+(526, 'skew()', 16, 21, '【2D平面傾斜扭曲變形】 Skews an element along the x- and y-axis'),
+(527, 'skewX()', 16, 21, '【2D水平軸向傾斜變形】 Skews an element along the x-axis'),
+(528, 'skewY()', 16, 21, '【2D垂直軸向傾斜變形】 Skews an element along the y-axis'),
+(529, 'sqrt()', 16, 18, '【CSS數學函數・標準開根號】 Returns the square root of a number'),
+(530, 'steps()', 16, 21, '【逐格非連續性補間動畫步進器】 Creates a stepped timing function for animations'),
+(531, 'tan()', 16, 18, '【CSS三角函數・正切值】 Returns the tangent of a number'),
+(532, 'translate()', 16, 21, '【2D平面座標位移】 Allows you to re-position an element along the x- and y-axis'),
+(533, 'translateX()', 16, 21, '【2D水平維度座標位移】 Allows you to re-position an element along the x-axis'),
+(534, 'translateY()', 16, 21, '【2D垂直維度座標位移】 Allows you to re-position an element along the y-axis'),
+(535, 'url()', 15, 18, '【樣式外部檔案路徑載入】 Allows you to include an external asset file in the stylesheet'),
+(536, 'var()', 15, 18, '【動態插入自訂原生CSS變數】 Inserts the value of a custom property without running JavaScript'),
+(537, 'Arial', 15, 19, '【網頁安全字型・經典無襯線體】 The most common sans-serif font, widely used for clean, modern headings and body text across Windows and Mac.'),
+(538, 'Verdana', 15, 19, '【網頁安全字型・寬體無襯線體】 A sans-serif font designed for screens with large spacing between letters, ensuring high readability at small sizes.'),
+(539, 'Tahoma', 15, 19, '【網頁安全字型・緊湊無襯線體】 Similar to Verdana but with tighter character spacing, great for user interfaces, menus, and sidebars.'),
+(540, 'Trebuchet MS', 15, 19, '【網頁安全字型・幾何無襯線體】 A modern sans-serif font with distinctive geometric letterforms, often used for web body copy and navigation.'),
+(541, 'Times New Roman', 15, 19, '【網頁安全字型・標準襯線體】 The most traditional serif font with small decorative strokes at the ends of letters, commonly used for printable layouts.'),
+(542, 'Georgia', 15, 19, '【網頁安全字型・優雅襯線體】 A beautiful serif font designed specifically for low-resolution digital screens, highly readable and elegant.'),
+(543, 'Garamond', 15, 19, '【網頁安全字型・古典襯線體】 An old-style serif font, very classic and popular for literary web pages, books, and academic reading articles.'),
+(544, 'Courier New', 15, 19, '【網頁安全字型・標準等寬體】 A monospaced font where every character takes up the exact same horizontal width, essential for displaying code blocks.'),
+(545, 'Brush Script MT', 15, 19, '【網頁安全字型・手寫草書體】 A cursive, handwritten-style script font, used occasionally for stylistic logos, signatures, or decorative headings.'),
+(546, 'Serif', 15, 19, '【通用備援字型・襯線體家族】 A generic font family with small strokes or decorations at the ends of letters, traditional and formal (e.g. Times New Roman).'),
+(547, 'Sans-serif', 15, 19, '【通用備援字型・無襯線體家族】 A generic font family with clean, straight edges and no decorative strokes, highly readable and modern (e.g. Arial, Helvetica).'),
+(548, 'Monospace', 15, 19, '【通用備援字型・等寬體家族】 A generic font family where every single character has the exact same fixed width, widely used for code blocks and data tables.'),
+(549, 'Cursive', 15, 19, '【通用備援字型・草書手寫體家族】 A generic font family designed to mimic casual, flowing handwriting or fluid artistic brush strokes.'),
+(550, 'Fantasy', 15, 19, '【通用備援字型・藝術幻想體家族】 A generic font family containing highly decorative, playful, or stylized artistic characters, mostly used for special headings.'),
+(551, 'cm', 14, 18, '【絕對單位・公分】 Absolute length unit: Centimeters'),
+(552, 'mm', 14, 18, '【絕對單位・公釐】 Absolute length unit: Millimeters'),
+(553, 'in', 14, 18, '【絕對單位・英吋】 Absolute length unit: Inches (1in = 96px = 2.54cm)'),
+(554, 'px', 14, 18, '【絕對單位・像素（核心）】 Pixels (1px = 1/96th of 1in), relative to the viewing device dpi'),
+(555, 'pt', 14, 18, '【絕對單位・點（印刷常用）】 Points (1pt = 1/72 of 1in), commonly used in print layouts'),
+(556, 'pc', 14, 18, '【絕對單位・派卡】 Picas (1pc = 12 pt)'),
+(557, 'em', 14, 18, '【相對單位・相對當前字級】 Relative to the font-size of the element (2em means 2 times the current font size)'),
+(558, 'ex', 14, 18, '【相對單位・相對當前字體x高度】 Relative to the x-height of the current font (rarely used)'),
+(559, 'ch', 14, 18, '【相對單位・相對數字0的寬度】 Relative to the width of the character \"0\" (zero)'),
+(560, 'rem', 14, 18, '【相對單位・相對根元素字級（必背）】 Relative to font-size of the root element (<html> tag font size)'),
+(561, 'vw', 14, 18, '【相對單位・視窗寬度百分比（RWD核心）】 Relative to 1% of the width of the viewport'),
+(562, 'vh', 14, 18, '【相對單位・視窗高度百分比（RWD核心）】 Relative to 1% of the height of the viewport'),
+(563, 'vmin', 14, 18, '【相對單位・視窗短邊百分比】 Relative to 1% of viewport\'s smaller dimension'),
+(564, 'vmax', 14, 18, '【相對單位・視窗長邊百分比】 Relative to 1% of viewport\'s larger dimension'),
+(565, '%', 14, 18, '【相對單位・相對父層百分比】 Relative to the current layout width or height of the parent element');
 
 -- --------------------------------------------------------
 
@@ -85,7 +657,7 @@ CREATE TABLE `css_terms` (
 CREATE TABLE `fetch_progress` (
   `id` int(11) UNSIGNED NOT NULL,
   `last_word_id` int(11) UNSIGNED NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- 傾印資料表的資料 `fetch_progress`
@@ -103,9 +675,312 @@ INSERT INTO `fetch_progress` (`id`, `last_word_id`) VALUES
 CREATE TABLE `html_terms` (
   `id` int(11) UNSIGNED NOT NULL,
   `term_name` varchar(50) NOT NULL,
-  `category_id` int(11) UNSIGNED NOT NULL,
+  `category1_id` int(11) UNSIGNED NOT NULL,
+  `category2_id` int(11) UNSIGNED NOT NULL,
   `description` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 傾印資料表的資料 `html_terms`
+--
+
+INSERT INTO `html_terms` (`id`, `term_name`, `category1_id`, `category2_id`, `description`) VALUES
+(1, '<!--...-->', 7, 11, 'Defines a comment'),
+(2, '<!DOCTYPE>', 7, 11, 'Defines the document type'),
+(3, '<a>', 8, 11, 'Defines a hyperlink'),
+(4, '<abbr>', 8, 11, 'Defines an abbreviation or an acronym'),
+(5, '<acronym>', 8, 11, 'Not supported in HTML5. Use <abbr> instead. Defines an acronym'),
+(6, '<address>', 7, 11, 'Defines contact information for the author/owner of a document'),
+(7, '<applet>', 8, 11, 'Not supported in HTML5. Use <embed> or <object> instead. Defines an embedded applet'),
+(8, '<area>', 8, 11, 'Defines an area inside an image map'),
+(9, '<article>', 7, 11, 'Defines an article'),
+(10, '<aside>', 7, 11, 'Defines content aside from the page content'),
+(11, '<audio>', 8, 11, 'Defines embedded sound content'),
+(12, '<b>', 8, 11, 'Defines bold text'),
+(13, '<base>', 7, 11, 'Specifies the base URL/target for all relative URLs in a document'),
+(14, '<basefont>', 7, 11, 'Not supported in HTML5. Use CSS instead. Specifies a default color, size, and font for all text in a document'),
+(15, '<bdi>', 8, 11, 'Isolates a part of text that might be formatted in a different direction from other text outside it'),
+(16, '<bdo>', 8, 11, 'Overrides the current text direction'),
+(17, '<big>', 8, 11, 'Not supported in HTML5. Use CSS instead. Defines big text'),
+(18, '<blockquote>', 7, 11, 'Defines a section that is quoted from another source'),
+(19, '<body>', 7, 11, 'Defines the document\'s body'),
+(20, '<br>', 8, 11, 'Defines a single line break'),
+(21, '<button>', 8, 12, 'Defines a clickable button'),
+(22, '<canvas>', 8, 11, 'Used to draw graphics, on the fly, via scripting (usually JavaScript)'),
+(23, '<caption>', 8, 11, 'Defines a table caption'),
+(24, '<center>', 7, 11, 'Not supported in HTML5. Use CSS instead. Defines centered text'),
+(25, '<cite>', 8, 11, 'Defines the title of a work'),
+(26, '<code>', 8, 11, 'Defines a piece of computer code'),
+(27, '<col>', 8, 11, 'Specifies column properties for each column within a <colgroup> element'),
+(28, '<colgroup>', 8, 11, 'Specifies a group of one or more columns in a table for formatting'),
+(29, '<data>', 8, 11, 'Adds a machine-readable translation of a given content'),
+(30, '<datalist>', 8, 12, 'Specifies a list of pre-defined options for input controls'),
+(31, '<dd>', 7, 11, 'Defines a description/value of a term in a description list'),
+(32, '<del>', 8, 11, 'Defines text that has been deleted from a document'),
+(33, '<details>', 7, 11, 'Defines additional details that the user can view or hide'),
+(34, '<dfn>', 8, 11, 'Specifies a term that is going to be defined within the content'),
+(35, '<dialog>', 7, 11, 'Defines a dialog box or window'),
+(36, '<dir>', 7, 11, 'Not supported in HTML5. Use <ul> instead. Defines a directory list'),
+(37, '<div>', 7, 11, 'Defines a section in a document'),
+(38, '<dl>', 7, 11, 'Defines a description list'),
+(39, '<dt>', 7, 11, 'Defines a term/name in a description list'),
+(40, '<em>', 8, 11, 'Defines emphasized text'),
+(41, '<embed>', 8, 11, 'Defines a container for an external application'),
+(42, '<fieldset>', 7, 12, 'Groups related elements in a form'),
+(43, '<figcaption>', 7, 11, 'Defines a caption for a <figure> element'),
+(44, '<figure>', 7, 11, 'Specifies self-contained content'),
+(45, '<font>', 8, 11, 'Not supported in HTML5. Use CSS instead. Defines font, color, and size for text'),
+(46, '<footer>', 7, 11, 'Defines a footer for a document or section'),
+(47, '<form>', 7, 12, 'Defines an HTML form for user input'),
+(48, '<frame>', 7, 11, 'Not supported in HTML5. Defines a window (a frame) in a frameset'),
+(49, '<frameset>', 7, 11, 'Not supported in HTML5. Defines a set of frames'),
+(50, '<h1> to <h6>', 7, 11, 'Defines HTML headings'),
+(51, '<head>', 7, 11, 'Contains metadata/information for the document'),
+(52, '<header>', 7, 11, 'Defines a header for a document or section'),
+(53, '<hgroup>', 7, 11, 'Defines a header and related content'),
+(54, '<hr>', 7, 11, 'Defines a thematic change in the content'),
+(55, '<html>', 7, 11, 'Defines the root of an HTML document'),
+(56, '<i>', 8, 11, 'Defines a part of text in an alternate voice or mood'),
+(57, '<iframe>', 8, 11, 'Defines an inline frame'),
+(58, '<img>', 8, 11, 'Defines an image'),
+(59, '<input>', 8, 12, 'Defines an input control'),
+(60, '<ins>', 8, 11, 'Defines a text that has been inserted into a document'),
+(61, '<kbd>', 8, 11, 'Defines keyboard input'),
+(62, '<label>', 8, 12, 'Defines a label for an <input> element'),
+(63, '<legend>', 7, 12, 'Defines a caption for a <fieldset> element'),
+(64, '<li>', 7, 11, 'Defines a list item'),
+(65, '<link>', 7, 11, 'Defines the relationship between a document and an external resource'),
+(66, '<main>', 7, 11, 'Specifies the main content of a document'),
+(67, '<map>', 8, 11, 'Defines an image map'),
+(68, '<mark>', 8, 11, 'Defines marked/highlighted text'),
+(69, '<menu>', 7, 11, 'Defines an unordered list'),
+(70, '<meta>', 7, 11, 'Defines metadata about an HTML document'),
+(71, '<meter>', 8, 11, 'Defines a scalar measurement within a known range (a gauge)'),
+(72, '<nav>', 7, 11, 'Defines navigation links'),
+(73, '<noframes>', 7, 11, 'Not supported in HTML5. Defines an alternate content for users that do not support frames'),
+(74, '<noscript>', 7, 11, 'Defines an alternate content for users that do not support client-side scripts'),
+(75, '<object>', 8, 11, 'Defines a container for an external application'),
+(76, '<ol>', 7, 11, 'Defines an ordered list'),
+(77, '<optgroup>', 8, 12, 'Defines a group of related options in a drop-down list'),
+(78, '<option>', 8, 12, 'Defines an option in a drop-down list'),
+(79, '<output>', 8, 12, 'Defines the result of a calculation'),
+(80, '<p>', 7, 11, 'Defines a paragraph'),
+(81, '<param>', 7, 11, 'Defines a parameter for an object'),
+(82, '<picture>', 8, 11, 'Defines a container for multiple image resources'),
+(83, '<pre>', 7, 11, 'Defines preformatted text'),
+(84, '<progress>', 8, 11, 'Represents the progress of a task'),
+(85, '<q>', 8, 11, 'Defines a short quotation'),
+(86, '<rp>', 8, 11, 'Defines what to show in browsers that do not support ruby annotations'),
+(87, '<rt>', 8, 11, 'Defines an explanation/pronunciation of characters (for East Asian typography)'),
+(88, '<ruby>', 8, 11, 'Defines a ruby annotation (for East Asian typography)'),
+(89, '<s>', 8, 11, 'Defines text that is no longer correct'),
+(90, '<samp>', 8, 11, 'Defines sample output from a computer program'),
+(91, '<script>', 8, 11, 'Defines a client-side script'),
+(92, '<search>', 7, 11, 'Defines a search section'),
+(93, '<section>', 7, 11, 'Defines a section in a document'),
+(94, '<select>', 8, 12, 'Defines a drop-down list'),
+(95, '<small>', 8, 11, 'Defines smaller text'),
+(96, '<source>', 8, 11, 'Defines multiple media resources for media elements (<video> and <audio>)'),
+(97, '<span>', 8, 11, 'Defines a section in a document'),
+(98, '<strike>', 8, 11, 'Not supported in HTML5. Use <del> or <s> instead. Defines strikethrough text'),
+(99, '<strong>', 8, 11, 'Defines important text'),
+(100, '<style>', 7, 11, 'Defines style information for a document'),
+(101, '<sub>', 8, 11, 'Defines subscripted text'),
+(102, '<summary>', 7, 11, 'Defines a visible heading for a <details> element'),
+(103, '<sup>', 8, 11, 'Defines superscripted text'),
+(104, '<svg>', 8, 11, 'Defines a container for SVG graphics'),
+(105, '<table>', 7, 11, 'Defines a table'),
+(106, '<tbody>', 7, 11, 'Groups the body content in a table'),
+(107, '<td>', 8, 11, 'Defines a cell in a table'),
+(108, '<template>', 7, 11, 'Defines a container for content that should be hidden when the page loads'),
+(109, '<textarea>', 8, 12, 'Defines a multiline input control (text area)'),
+(110, '<tfoot>', 7, 11, 'Groups the footer content in a table'),
+(111, '<th>', 8, 11, 'Defines a header cell in a table'),
+(112, '<thead>', 7, 11, 'Groups the header content in a table'),
+(113, '<time>', 8, 11, 'Defines a specific time (or datetime)'),
+(114, '<title>', 7, 11, 'Defines a title for the document'),
+(115, '<tr>', 7, 11, 'Defines a row in a table'),
+(116, '<track>', 8, 11, 'Defines text tracks for media elements (<video> and <audio>)'),
+(117, '<tt>', 8, 11, 'Not supported in HTML5. Use CSS instead. Defines teletype text'),
+(118, '<u>', 8, 11, 'Defines some text that is unarticulated and styled differently from normal text'),
+(119, '<ul>', 7, 11, 'Defines an unordered list'),
+(120, '<var>', 8, 11, 'Defines a variable'),
+(121, '<video>', 8, 11, 'Defines embedded video content'),
+(122, '<wbr>', 8, 11, 'Defines a possible line-break'),
+(123, 'accept', 10, 12, 'Specifies the types of files that the server accepts (only for type=\"file\")'),
+(124, 'accept-charset', 10, 12, 'Specifies the character encodings that are to be used for the form submission'),
+(125, 'accesskey', 9, 11, 'Specifies a shortcut key to activate/focus an element'),
+(126, 'action', 10, 12, 'Specifies where to send the form-data when a form is submitted'),
+(127, 'align', 10, 11, 'Not supported in HTML 5. Specifies the alignment according to surrounding elements. Use CSS instead'),
+(128, 'alt', 10, 11, 'Specifies an alternate text when the original element fails to display'),
+(129, 'async', 10, 11, 'Specifies that the script is executed asynchronously (only for external scripts)'),
+(130, 'autocomplete', 10, 12, 'Specifies whether the <form> or the <input> element should have autocomplete enabled'),
+(131, 'autofocus', 10, 12, 'Specifies that the element should automatically get focus when the page loads'),
+(132, 'autoplay', 10, 11, 'Specifies that the audio/video will start playing as soon as it is ready'),
+(133, 'bgcolor', 10, 11, 'Not supported in HTML 5. Specifies the background color of an element. Use CSS instead'),
+(134, 'border', 10, 11, 'Not supported in HTML 5. Specifies the width of the border of an element. Use CSS instead'),
+(135, 'charset', 10, 11, 'Specifies the character encoding'),
+(136, 'checked', 10, 12, 'Specifies that an <input> element should be pre-selected when the page loads (for type=\"checkbox\" or type=\"radio\")'),
+(137, 'cite', 10, 11, 'Specifies a URL which explains the quote/deleted/inserted text'),
+(138, 'class', 9, 11, 'Specifies one or more class names for an element (refers to a class in a style sheet)'),
+(139, 'color', 10, 11, 'Not supported in HTML 5. Specifies the text color of an element. Use CSS instead'),
+(140, 'cols', 10, 12, 'Specifies the visible width of a text area'),
+(141, 'colspan', 10, 11, 'Specifies the number of columns a table cell should span'),
+(142, 'content', 10, 11, 'Gives the value associated with the http-equiv or name attribute'),
+(143, 'contenteditable', 9, 11, 'Specifies whether the content of an element is editable or not'),
+(144, 'controls', 10, 11, 'Specifies that audio/video controls should be displayed (such as a play/pause button etc.)'),
+(145, 'coords', 10, 11, 'Specifies the coordinates of the area'),
+(146, 'data', 10, 11, 'Specifies the URL of the resource to be used by the object'),
+(147, 'data-*', 9, 11, 'Used to store custom data private to the page or application'),
+(148, 'datetime', 10, 11, 'Specifies the date and time'),
+(149, 'default', 10, 11, 'Specifies that the track is to be enabled if the user\'s preferences do not indicate that another track would be more appropriate'),
+(150, 'defer', 10, 11, 'Specifies that the script is executed when the page has finished parsing (only for external scripts)'),
+(151, 'dir', 9, 11, 'Specifies the text direction for the content in an element'),
+(152, 'dirname', 10, 12, 'Specifies that the text direction will be submitted'),
+(153, 'disabled', 10, 12, 'Specifies that the specified element/group of elements should be disabled'),
+(154, 'download', 10, 11, 'Specifies that the target will be downloaded when a user clicks on the hyperlink'),
+(155, 'draggable', 9, 11, 'Specifies whether an element is draggable or not'),
+(156, 'enctype', 10, 12, 'Specifies how the form-data should be encoded when submitting it to the server (only for method=\"post\")'),
+(157, 'enterkeyhint', 9, 11, 'Specifies the text of the enter-key on a virtual keyboard'),
+(158, 'for', 10, 12, 'Specifies which form element(s) a label/calculation is bound to'),
+(159, 'form', 10, 12, 'Specifies the name of the form the element belongs to'),
+(160, 'formaction', 10, 12, 'Specifies where to send the form-data when a form is submitted. Only for type=\"submit\"'),
+(161, 'headers', 10, 11, 'Specifies one or more headers cells a cell is related to'),
+(162, 'height', 10, 11, 'Specifies the height of the element'),
+(163, 'hidden', 9, 11, 'Specifies that an element is not yet, or is no longer, relevant'),
+(164, 'high', 10, 11, 'Specifies the range that is considered to be a high value'),
+(165, 'href', 10, 11, 'Specifies the URL of the page the link goes to'),
+(166, 'hreflang', 10, 11, 'Specifies the language of the linked document'),
+(167, 'http-equiv', 10, 11, 'Provides an HTTP header for the information/value of the content attribute'),
+(168, 'id', 9, 11, 'Specifies a unique id for an element'),
+(169, 'inert', 9, 11, 'Specifies that the browser should ignore this section'),
+(170, 'inputmode', 9, 11, 'Specifies the mode of a virtual keyboard'),
+(171, 'ismap', 10, 11, 'Specifies an image as a server-side image map'),
+(172, 'kind', 10, 11, 'Specifies the kind of text track'),
+(173, 'label', 10, 11, 'Specifies the title of the text track'),
+(174, 'lang', 9, 11, 'Specifies the language of the element\'s content'),
+(175, 'list', 10, 12, 'Refers to a <datalist> element that contains pre-defined options for an <input> element'),
+(176, 'loop', 10, 11, 'Specifies that the audio/video will start over again, every time it is finished'),
+(177, 'low', 10, 11, 'Specifies the range that is considered to be a low value'),
+(178, 'max', 10, 12, 'Specifies the maximum value'),
+(179, 'maxlength', 10, 12, 'Specifies the maximum number of characters allowed in an element'),
+(180, 'media', 10, 11, 'Specifies what media/device the linked document is optimized for'),
+(181, 'method', 10, 12, 'Specifies the HTTP method to use when sending form-data'),
+(182, 'min', 10, 12, 'Specifies a minimum value'),
+(183, 'multiple', 10, 12, 'Specifies that a user can enter more than one value'),
+(184, 'muted', 10, 11, 'Specifies that the audio output of the video should be muted'),
+(185, 'name', 10, 12, 'Specifies the name of the element'),
+(186, 'novalidate', 10, 12, 'Specifies that the form should not be validated when submitted'),
+(187, 'onabort', 10, 13, 'Script to be run on abort'),
+(188, 'onafterprint', 10, 13, 'Script to be run after the document is printed'),
+(189, 'onbeforeprint', 10, 13, 'Script to be run before the document is printed'),
+(190, 'onbeforeunload', 10, 13, 'Script to be run when the document is about to be unloaded'),
+(191, 'onblur', 9, 13, 'Script to be run when the element loses focus'),
+(192, 'oncanplay', 10, 13, 'Script to be run when a file is ready to start playing (when it has buffered enough to begin)'),
+(193, 'oncanplaythrough', 10, 13, 'Script to be run when a file can be played all the way to the end without pausing for buffering'),
+(194, 'onchange', 9, 13, 'Script to be run when the value of the element is changed'),
+(195, 'onclick', 9, 13, 'Script to be run when the element is being clicked'),
+(196, 'oncontextmenu', 9, 13, 'Script to be run when a context menu is triggered'),
+(197, 'oncopy', 9, 13, 'Script to be run when the content of the element is being copied'),
+(198, 'oncuechange', 10, 13, 'Script to be run when the cue changes in a <track> element'),
+(199, 'oncut', 9, 13, 'Script to be run when the content of the element is being cut'),
+(200, 'ondblclick', 9, 13, 'Script to be run when the element is being double-clicked'),
+(201, 'ondrag', 9, 13, 'Script to be run when the element is being dragged'),
+(202, 'ondragend', 9, 13, 'Script to be run at the end of a drag operation'),
+(203, 'ondragenter', 9, 13, 'Script to be run when an element has been dragged to a valid drop target'),
+(204, 'ondragleave', 9, 13, 'Script to be run when an element leaves a valid drop target'),
+(205, 'ondragover', 9, 13, 'Script to be run when an element is being dragged over a valid drop target'),
+(206, 'ondragstart', 9, 13, 'Script to be run at the start of a drag operation'),
+(207, 'ondrop', 9, 13, 'Script to be run when dragged element is being dropped'),
+(208, 'ondurationchange', 10, 13, 'Script to be run when the length of the media changes'),
+(209, 'onemptied', 10, 13, 'Script to be run when something bad happens and the file is suddenly unavailable (like unexpectedly disconnects)'),
+(210, 'onended', 10, 13, 'Script to be run when the media has reach the end (a useful event for messages like \"thanks for listening\")'),
+(211, 'onerror', 10, 13, 'Script to be run when an error occurs'),
+(212, 'onfocus', 9, 13, 'Script to be run when the element gets focus'),
+(213, 'onhashchange', 10, 13, 'Script to be run when there has been changes to the anchor part of the a URL'),
+(214, 'oninput', 9, 13, 'Script to be run when the element gets user input'),
+(215, 'oninvalid', 9, 13, 'Script to be run when the element is invalid'),
+(216, 'onkeydown', 9, 13, 'Script to be run when a user is pressing a key'),
+(217, 'onkeypress', 9, 13, 'Script to be run when a user presses a key'),
+(218, 'onkeyup', 9, 13, 'Script to be run when a user releases a key'),
+(219, 'onload', 10, 13, 'Script to be run when the element is finished loading'),
+(220, 'onloadeddata', 10, 13, 'Script to be run when media data is loaded'),
+(221, 'onloadedmetadata', 10, 13, 'Script to be run when meta data (like dimensions and duration) are loaded'),
+(222, 'onloadstart', 10, 13, 'Script to be run just as the file begins to load before anything is actually loaded'),
+(223, 'onmousedown', 9, 13, 'Script to be run when a mouse button is pressed down on an element'),
+(224, 'onmousemove', 9, 13, 'Script to be run as long as the mouse pointer is moving over an element'),
+(225, 'onmouseout', 9, 13, 'Script to be run when a mouse pointer moves out of an element'),
+(226, 'onmouseover', 9, 13, 'Script to be run when a mouse pointer moves over an element'),
+(227, 'onmouseup', 9, 13, 'Script to be run when a mouse button is released over an element'),
+(228, 'onmousewheel', 9, 13, 'Script to be run when a mouse wheel is being scrolled over an element'),
+(229, 'onoffline', 10, 13, 'Script to be run when the browser starts to work offline'),
+(230, 'ononline', 10, 13, 'Script to be run when the browser starts to work online'),
+(231, 'onpagehide', 10, 13, 'Script to be run when a user navigates away from a page'),
+(232, 'onpageshow', 10, 13, 'Script to be run when a user navigates to a page'),
+(233, 'onpaste', 9, 13, 'Script to be run when the user pastes some content in an element'),
+(234, 'onpause', 10, 13, 'Script to be run when the media is paused either by the user or programmatically'),
+(235, 'onplay', 10, 13, 'Script to be run when the media has started playing'),
+(236, 'onplaying', 10, 13, 'Script to be run when the media has started playing'),
+(237, 'onpopstate', 10, 13, 'Script to be run when the window\'s history changes.'),
+(238, 'onprogress', 10, 13, 'Script to be run when the browser is in the process of getting the media data'),
+(239, 'onratechange', 10, 13, 'Script to be run each time the playback rate changes (like when a user switches to a slow motion or fast forward mode).'),
+(240, 'onreset', 10, 13, 'Script to be run when a reset button in a form is clicked.'),
+(241, 'onresize', 10, 13, 'Script to be run when the browser window is being resized.'),
+(242, 'onscroll', 9, 13, 'Script to be run when an element\'s scrollbar is being scrolled'),
+(243, 'onsearch', 10, 13, 'Script to be run when the user writes something in a search field (for <input type=\"search\">)'),
+(244, 'onseeked', 10, 13, 'Script to be run when the seeking attribute is set to false indicating that seeking has ended'),
+(245, 'onseeking', 10, 13, 'Script to be run when the seeking attribute is set to true indicating that seeking is active'),
+(246, 'onseeking', 10, 13, 'Script to be run when the seeking attribute is set to true indicating that seeking is active'),
+(247, 'onselect', 9, 13, 'Script to be run when the element gets selected'),
+(248, 'onstalled', 10, 13, 'Script to be run when the browser is unable to fetch the media data for whatever reason'),
+(249, 'onstorage', 10, 13, 'Script to be run when a Web Storage area is updated'),
+(250, 'onsubmit', 10, 13, 'Script to be run when a form is submitted'),
+(251, 'onsuspend', 10, 13, 'Script to be run when fetching the media data is stopped before it is completely loaded for whatever reason'),
+(252, 'ontimeupdate', 10, 13, 'Script to be run when the playing position has changed (like when the user fast forwards to a different point in the media)'),
+(253, 'ontoggle', 10, 13, 'Script to be run when the user opens or closes the <details> element'),
+(254, 'onunload', 10, 13, 'Script to be run when a page has unloaded (or the browser window has been closed)'),
+(255, 'onvolumechange', 10, 13, 'Script to be run each time the volume of a video/audio has been changed'),
+(256, 'onwaiting', 10, 13, 'Script to be run when the media has paused but is expected to resume (like when the media pauses to buffer more data)'),
+(257, 'onwheel', 9, 13, 'Script to be run when the mouse wheel rolls up or down over an element'),
+(258, 'open', 10, 11, 'Specifies that the details should be visible (open) to the user'),
+(259, 'optimum', 10, 11, 'Specifies what value is the optimal value for the gauge'),
+(260, 'pattern', 10, 12, 'Specifies a regular expression that an <input> element\'s value is checked against'),
+(261, 'placeholder', 10, 12, 'Specifies a short hint that describes the expected value of the element'),
+(262, 'popover', 9, 11, 'Specifies a popover element'),
+(263, 'popovertarget', 10, 12, 'Specifies which popover element to invoked'),
+(264, 'popovertargetaction', 10, 12, 'Specifies what happens to the popover element when the button is clicked'),
+(265, 'poster', 10, 11, 'Specifies an image to be shown while the video is downloading, or until the user hits the play button'),
+(266, 'preload', 10, 11, 'Specifies if and how the author thinks the audio/video should be loaded when the page loads'),
+(267, 'readonly', 10, 12, 'Specifies that the element is read-only'),
+(268, 'rel', 10, 11, 'Specifies the relationship between the current document and the linked document'),
+(269, 'required', 10, 12, 'Specifies that the element must be filled out before submitting the form'),
+(270, 'reversed', 10, 11, 'Specifies that the list order should be descending (9,8,7...)'),
+(271, 'rows', 10, 12, 'Specifies the visible number of lines in a text area'),
+(272, 'rowspan', 10, 11, 'Specifies the number of rows a table cell should span'),
+(273, 'sandbox', 10, 11, 'Enables an extra set of restrictions for the content in an <iframe>'),
+(274, 'scope', 10, 11, 'Specifies whether a header cell is a header for a column, row, or group of columns or rows'),
+(275, 'selected', 10, 12, 'Specifies that an option should be pre-selected when the page loads'),
+(276, 'shape', 10, 11, 'Specifies the shape of the area'),
+(277, 'size', 10, 12, 'Specifies the width, in characters (for <input>) or specifies the number of visible options (for <select>)'),
+(278, 'sizes', 10, 11, 'Specifies the size of the linked resource'),
+(279, 'span', 10, 11, 'Specifies the number of columns to span'),
+(280, 'spellcheck', 9, 11, 'Specifies whether the element is to have its spelling and grammar checked or not'),
+(281, 'src', 10, 11, 'Specifies the URL of the media file'),
+(282, 'srcdoc', 10, 11, 'Specifies the HTML content of the page to show in the <iframe>'),
+(283, 'srclang', 10, 11, 'Specifies the language of the track text data (required if kind=\"subtitles\")'),
+(284, 'srcset', 10, 11, 'Specifies the URL of the image to use in different situations'),
+(285, 'start', 10, 11, 'Specifies the start value of an ordered list'),
+(286, 'step', 10, 12, 'Specifies the legal number intervals for an input field'),
+(287, 'style', 9, 11, 'Specifies an inline CSS style for an element'),
+(288, 'tabindex', 9, 11, 'Specifies the tabbing order of an element'),
+(289, 'target', 10, 11, 'Specifies the target for where to open the linked document or where to submit the form'),
+(290, 'title', 9, 11, 'Specifies extra information about an element'),
+(291, 'translate', 9, 11, 'Specifies whether the content of an element should be translated or not'),
+(292, 'type', 10, 11, 'Specifies the type of element'),
+(293, 'usemap', 10, 11, 'Specifies an image as a client-side image map'),
+(294, 'value', 10, 12, 'Specifies the value of the element'),
+(295, 'width', 10, 11, 'Specifies the width of the element'),
+(296, 'wrap', 10, 12, 'Specifies how the text in a text area is to be wrapped when submitted in a form');
 
 -- --------------------------------------------------------
 
@@ -117,7 +992,8 @@ CREATE TABLE `learners` (
   `id` int(11) UNSIGNED NOT NULL,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `daily_progress` longtext DEFAULT NULL
+  `daily_progress` longtext DEFAULT NULL,
+  `task_finished` date DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -5876,7 +6752,7 @@ INSERT INTO `universal_import` (`line_text`) VALUES
 CREATE TABLE `words` (
   `id` int(11) UNSIGNED NOT NULL,
   `word` varchar(255) NOT NULL,
-  `part_of_speech` int(11) UNSIGNED NOT NULL,
+  `part_of_speech_id` int(11) UNSIGNED NOT NULL,
   `phonetic` varchar(255) NOT NULL,
   `definition` text NOT NULL,
   `translation` text NOT NULL,
@@ -5889,7 +6765,7 @@ CREATE TABLE `words` (
 -- 傾印資料表的資料 `words`
 --
 
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (1, 'abandon', 2, '/əˈbæn.dən/', 'To give up or relinquish control of, to surrender or to give oneself over, or to yield to one\'s emotions.', '拋棄、放棄', 'https://api.dictionaryapi.dev/media/pronunciations/en/abandon-us.mp3', 1, '2026-06-01 14:48:14'),
 (2, 'abbreviation', 1, '/əˌbɹiː.viˈeɪ.ʃən/', 'The result of shortening or reducing; abridgment.', '縮寫、節略、縮短', 'https://api.dictionaryapi.dev/media/pronunciations/en/abbreviation-uk.mp3', 1, '2026-06-01 14:48:14'),
 (3, 'abide', 2, '/əˈbaɪd/', 'To endure without yielding; to withstand; await defiantly; to encounter; to persevere.', '忍受、遵守、堅持', 'https://api.dictionaryapi.dev/media/pronunciations/en/abide-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -6134,7 +7010,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (242, 'among', 5, '/əˈmɒŋ/', 'Denotes a mingling or intermixing with distinct or separable objects. (See Usage Note at amidst.)', '在...之中、在...之間', 'https://api.dictionaryapi.dev/media/pronunciations/en/among-us.mp3', 1, '2026-06-01 14:48:14'),
 (243, 'amount', 1, '/əˈmaʊnt/', 'The total, aggregate or sum of material (not applicable to discrete numbers or units or items in standard English).', '數量、總額', 'https://api.dictionaryapi.dev/media/pronunciations/en/amount-us.mp3', 1, '2026-06-01 14:48:14'),
 (244, 'amount', 2, '/əˈmaʊnt/', '(followed by to) To total or evaluate.', '總計、共達', 'https://api.dictionaryapi.dev/media/pronunciations/en/amount-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (245, 'amuse', 1, '/əˈmjuːz/', 'To entertain or occupy in a pleasant manner; to stir with pleasing emotions.', '娛樂、消遣（此處依名詞語意翻譯）', 'https://api.dictionaryapi.dev/media/pronunciations/en/amuse-uk.mp3', 1, '2026-06-01 14:48:14'),
 (246, 'amuse', 2, '/əˈmjuːz/', 'To entertain or occupy in a pleasant manner; to stir with pleasing emotions.', '使快樂、逗...笑', 'https://api.dictionaryapi.dev/media/pronunciations/en/amuse-uk.mp3', 1, '2026-06-01 14:48:14'),
 (247, 'analects', 1, '[ˈæ.nəˌlɛk(t)s]', 'A collection of excerpts or quotes.', '文選、語錄（常指《論語》）', NULL, 1, '2026-06-01 14:48:14'),
@@ -6373,7 +7249,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (480, 'bam', 1, '/bæm/', 'Representing a loud noise or heavy impact.', '重擊聲、砰然巨響', 'https://api.dictionaryapi.dev/media/pronunciations/en/bam-au.mp3', 1, '2026-06-01 14:48:14'),
 (481, 'bamboo', 1, '/bæmˈbu/', 'A grass of the Poaceae family, characterised by its woody, hollow, round, straight, jointed stem, all of which are in the Bambuseae tribe.', '竹子、竹子製成的物品', 'https://api.dictionaryapi.dev/media/pronunciations/en/bamboo-us.mp3', 1, '2026-06-01 14:48:14'),
 (482, 'ban', 2, '/bæn/', 'To summon; to call out.', '禁止、取締、勒令', 'https://api.dictionaryapi.dev/media/pronunciations/en/ban-uk.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (483, 'banana', 1, '/bəˈnɑːnə/', 'An elongated curved tropical fruit that grows in bunches and has a creamy flesh and a smooth skin.', '香蕉', 'https://api.dictionaryapi.dev/media/pronunciations/en/banana-uk.mp3', 1, '2026-06-01 14:48:14'),
 (484, 'band', 1, '/bænd/', 'A strip of material used for strengthening or coupling.', '樂隊、條帶、一夥人', 'https://api.dictionaryapi.dev/media/pronunciations/en/band-ca.mp3', 1, '2026-06-01 14:48:14'),
 (485, 'bandage', 1, '/ˈbændɪdʒ/', 'A strip of gauze or similar material used to protect or support a wound or injury.', '繃帶', 'https://dictionaryapi.dev/bandage', 1, '2026-06-01 14:48:14'),
@@ -6611,7 +7487,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (717, 'bound', 3, '/ˈbaʊnd/', '(with infinitive) Obliged (to).', '被束縛的、受限制的、必然的、準備前往...的', 'https://api.dictionaryapi.dev/media/pronunciations/en/bound-us.mp3', 1, '2026-06-01 14:48:14'),
 (718, 'bow', 1, '/bəʊ/', 'A weapon made of a curved piece of wood or other flexible material whose ends are connected by a string, used for shooting arrows.', '弓、蝴蝶結、琴弓、船頭', 'https://api.dictionaryapi.dev/media/pronunciations/en/bow-1-uk.mp3', 1, '2026-06-01 14:48:14'),
 (719, 'bow', 2, '/bəʊ/', 'To play music on (a stringed) instrument using a bow.', '彎腰、鞠躬、屈服', 'https://api.dictionaryapi.dev/media/pronunciations/en/bow-1-uk.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (720, 'bowl', 1, '/bəʊɫ/', 'A roughly hemispherical container used to hold, mix or present food, such as salad, fruit or soup, or other items.', '碗、大木球', 'https://api.dictionaryapi.dev/media/pronunciations/en/bowl-us.mp3', 1, '2026-06-01 14:48:14'),
 (721, 'bowling', 1, '', 'A game played by rolling a ball down an alley and trying to knock over a triangular group of ten pins; ten-pin bowling/five-pin bowling', '保齡球運動', 'https://api.dictionaryapi.dev/media/pronunciations/en/bowling-au.mp3', 1, '2026-06-01 14:48:14'),
 (722, 'box', 1, '', 'Senses relating to a three-dimensional object or space.', '盒子、箱子、包廂', 'https://api.dictionaryapi.dev/media/pronunciations/en/box-au.mp3', 1, '2026-06-01 14:48:14'),
@@ -6860,7 +7736,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (965, 'certain', 3, '/ˈsɝtn̩/', 'Sure, positive, not doubting.', '確定的、某個、無疑的', 'https://api.dictionaryapi.dev/media/pronunciations/en/certain-ca.mp3', 1, '2026-06-01 14:48:14'),
 (966, 'certificate', 1, '', 'A document containing a certified statement.', '證書、執照、證明書', 'https://dictionaryapi.dev/certificate', 1, '2026-06-01 14:48:14'),
 (967, 'chain', 1, '/ˈt͡ʃeɪn/', 'A series of interconnected rings or links usually made of metal.', '鏈條、連鎖店、一連串', 'https://api.dictionaryapi.dev/media/pronunciations/en/chain-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (968, 'chain', 2, '/ˈt͡ʃeɪn/', 'To fasten something with a chain.', '用鎖鏈鎖住、束縛', 'https://api.dictionaryapi.dev/media/pronunciations/en/chain-us.mp3', 1, '2026-06-01 14:48:14'),
 (969, 'chair', 1, '/t͡ʃɛə(ɹ)/', 'An item of furniture used to sit on or in, comprising a seat, legs, back, and sometimes arm rests, for use by one person. Compare stool, couch, sofa, settee, loveseat and bench.', '椅子、席位、主席職位', 'https://api.dictionaryapi.dev/media/pronunciations/en/chair-uk.mp3', 1, '2026-06-01 14:48:14'),
 (970, 'chairwoman', 1, '', 'A female chairperson', '女主席、女會長', 'https://dictionaryapi.dev/chairwoman', 1, '2026-06-01 14:48:14'),
@@ -7103,7 +7979,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (1207, 'commission', 1, '/kəˈmɪʃən/', 'A sending or mission (to do or accomplish something).', '委員會、佣金、委任、委託', 'https://api.dictionaryapi.dev/media/pronunciations/en/commission.mp3', 1, '2026-06-01 14:48:14'),
 (1208, 'commission', 2, '/kəˈmɪʃən/', 'To send or officially charge someone or some group to do something.', '委託、委任、委派', 'https://api.dictionaryapi.dev/media/pronunciations/en/commission.mp3', 1, '2026-06-01 14:48:14'),
 (1209, 'commit', 2, '/kəˈmɪt/', 'To give in trust; to put into charge or keeping; to entrust; to consign; used with to or formerly unto.', '犯（罪）、承諾、使承擔義務、託付', 'https://api.dictionaryapi.dev/media/pronunciations/en/commit-uk.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (1210, 'commitment', 1, '', 'The act or an instance of committing, putting in charge, keeping, or trust, especially:', '承諾、奉獻、投入、責任', 'https://dictionaryapi.dev/commitment', 1, '2026-06-01 14:48:14'),
 (1211, 'committee', 1, '', 'A body of one or more persons convened for the accomplishment of some specific purpose, typically with formal protocols.', '委員會', 'https://dictionaryapi.dev/committee', 1, '2026-06-01 14:48:14'),
 (1212, 'commodity', 1, '/kəˈmɒdəti/', 'Anything movable (a good) that is bought and sold.', '商品、日用品', 'https://dictionaryapi.dev/commodity', 1, '2026-06-01 14:48:14'),
@@ -7347,7 +8223,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (1450, 'costly', 3, '/ˈkɒst.li/', 'Of high cost; expensive.', '昂貴的、代價高昂的', 'https://api.dictionaryapi.dev/media/pronunciations/en/costly-us.mp3', 1, '2026-06-01 14:48:14'),
 (1451, 'costume', 1, '/ˈkɒs.tjuːm/', 'A style of dress, including garments, accessories and hairstyle, especially as characteristic of a particular country, period or people.', '服裝、戲服', 'https://api.dictionaryapi.dev/media/pronunciations/en/costume-us.mp3', 1, '2026-06-01 14:48:14'),
 (1452, 'cosy', 3, '/ˈkəʊzi/', 'Affording comfort and warmth; snug; social', '舒適的、溫馨的', 'https://api.dictionaryapi.dev/media/pronunciations/en/cosy-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (1453, 'cottage', 1, '/ˈkɒtɪdʒ/', 'A small house.', '農舍、小屋', 'https://api.dictionaryapi.dev/media/pronunciations/en/cottage-us.mp3', 1, '2026-06-01 14:48:14'),
 (1454, 'cotton', 1, '/ˈkɒt.n̩/', 'Gossypium, a genus of plant used as a source of cotton fiber.', '棉花、棉線', 'https://api.dictionaryapi.dev/media/pronunciations/en/cotton-1-us.mp3', 1, '2026-06-01 14:48:14'),
 (1455, 'couch', 1, '/kaʊtʃ/', 'Couch grass, a species of persistent grass, Elymus repens, usually considered a weed.', '長沙發、睡椅', 'https://api.dictionaryapi.dev/media/pronunciations/en/couch-au.mp3', 1, '2026-06-01 14:48:14'),
@@ -7591,7 +8467,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (1693, 'deliberation', 1, '/dɪˌlɪbəˈɹeɪʃən/', 'The act of deliberating, or of weighing and examining the reasons for and against a choice or measure; careful consideration; mature reflection.', '深思熟慮、審議、從容', 'https://dictionaryapi.dev/deliberation', 1, '2026-06-01 14:48:14'),
 (1694, 'delicacy', 1, '/ˈdɛlɪkəsi/', 'The quality of being delicate.', '佳餚、精緻、脆弱', 'https://api.dictionaryapi.dev/media/pronunciations/en/delicacy-us.mp3', 1, '2026-06-01 14:48:14'),
 (1695, 'delicate', 3, '/ˈdɛlɪkət/', 'Easily damaged or requiring careful handling.', '精緻的、脆弱的、微妙的', 'https://api.dictionaryapi.dev/media/pronunciations/en/delicate-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (1696, 'delicious', 3, '/dɪˈlɪʃəs/', 'Pleasing to taste; tasty.', '美味的、令人愉快的', 'https://api.dictionaryapi.dev/media/pronunciations/en/delicious-us.mp3', 1, '2026-06-01 14:48:14'),
 (1697, 'delight', 1, '/dəˈlaɪt/', 'Joy; pleasure.', '欣喜、快樂、令人高興的事', 'https://api.dictionaryapi.dev/media/pronunciations/en/delight-us.mp3', 1, '2026-06-01 14:48:14'),
 (1698, 'delight', 2, '/dəˈlaɪt/', 'To give delight to; to affect with great pleasure; to please highly.', '使高興、使欣喜', 'https://api.dictionaryapi.dev/media/pronunciations/en/delight-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -7830,7 +8706,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (1931, 'ditch', 1, '/dɪtʃ/', 'A trench; a long, shallow indentation, as for irrigation or drainage.', '溝渠、壕溝', 'https://api.dictionaryapi.dev/media/pronunciations/en/ditch-us.mp3', 1, '2026-06-01 14:48:14'),
 (1932, 'dive', 1, '/ˈdaɪv/', 'A jump or plunge into water.', '潛水、跳水、俯衝、小酒館', 'https://api.dictionaryapi.dev/media/pronunciations/en/dive-1-us.mp3', 1, '2026-06-01 14:48:14'),
 (1933, 'dive', 2, '/ˈdaɪv/', 'To swim under water.', '跳水、潛水、俯衝', 'https://api.dictionaryapi.dev/media/pronunciations/en/dive-1-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (1934, 'diverse', 3, '/daɪˈvɜːs/', 'Consisting of many different elements; various.', '多元的、不同的、多樣的', 'https://api.dictionaryapi.dev/media/pronunciations/en/diverse-us.mp3', 1, '2026-06-01 14:48:14'),
 (1935, 'diversify', 2, '', 'To make diverse or various in form or quality; to give variety to distinguish by numerous differences or aspects.', '使多樣化、擴大經營範圍', 'https://dictionaryapi.dev/diversify', 1, '2026-06-01 14:48:14'),
 (1936, 'diversion', 1, '/daɪˈvɜːʃən/', 'A tactic used to draw attention away from the real threat or action.', '轉移、消遣、改道', 'https://api.dictionaryapi.dev/media/pronunciations/en/diversion-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -8069,9 +8945,9 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (2169, 'eloquent', 3, '/ˈɛl.əˌkwənt/', 'Fluently persuasive and articulate', '雄辯的、口才流利的、有說服力的', 'https://api.dictionaryapi.dev/media/pronunciations/en/eloquent-uk.mp3', 1, '2026-06-01 14:48:14'),
 (2170, 'else', 4, '/ɛls/', '(follows interrogative adverbs) Otherwise, if not.', '其他、否則、另外', 'https://api.dictionaryapi.dev/media/pronunciations/en/else-us.mp3', 1, '2026-06-01 14:48:14'),
 (2171, 'elsewhere', 4, '/ˌɛlsˈʍɛːə/', 'In or at some other place.', '在別處、到別處', 'https://api.dictionaryapi.dev/media/pronunciations/en/elsewhere-us.mp3', 1, '2026-06-01 14:48:14'),
-(2172, 'embargo', 1, '/ɪmˈbɑːɡəʊ/', 'An order by the government prohibiting ships from leaving port.', '禁運（令）、禁令', 'https://dictionaryapi.dev/embargo', 1, '2026-06-01 14:48:14'),
-(2173, 'embargo', 2, '/ɪmˈbɑːɡəʊ/', 'To impose an embargo on trading certain goods with another country.', '禁止通商、查封', '', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+(2172, 'embargo', 1, '/ɪmˈbɑːɡəʊ/', 'An order by the government prohibiting ships from leaving port.', '禁運（令）、禁令', 'https://dictionaryapi.dev/embargo', 1, '2026-06-01 14:48:14');
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+(2173, 'embargo', 2, '/ɪmˈbɑːɡəʊ/', 'To impose an embargo on trading certain goods with another country.', '禁止通商、查封', '', 1, '2026-06-01 14:48:14'),
 (2174, 'embark', 2, '/ɛmˈbɑːk/', 'To get on a boat or ship or (outside the USA) an aeroplane.', '著手、從事、上船（或飛機）', 'https://api.dictionaryapi.dev/media/pronunciations/en/embark-uk.mp3', 1, '2026-06-01 14:48:14'),
 (2175, 'embarrass', 2, '/ɪmˈbæ.ɹəs/', 'To humiliate; to disrupt somebody\'s composure or comfort with acting publicly or freely; to disconcert; to abash', '使尷尬、使難堪', 'https://api.dictionaryapi.dev/media/pronunciations/en/embarrass-us.mp3', 1, '2026-06-01 14:48:14'),
 (2176, 'embassy', 1, '/ˈɛmbəsi/', 'The function or duty of an ambassador.', '大使館、大使館全體工作人員', 'https://api.dictionaryapi.dev/media/pronunciations/en/embassy-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -8320,7 +9196,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (2419, 'fail', 2, '/feɪl/', 'To be unsuccessful.', '失敗、未能做到、不及格、衰退', 'https://api.dictionaryapi.dev/media/pronunciations/en/fail-us.mp3', 1, '2026-06-01 14:48:14'),
 (2420, 'failure', 1, '/ˈfeɪl.jɚ/', 'State or condition of not meeting a desirable or intended objective, opposite of success.', '失敗、故障、不及格、不履行', 'https://api.dictionaryapi.dev/media/pronunciations/en/failure-ca.mp3', 1, '2026-06-01 14:48:14'),
 (2421, 'faint', 1, '/feɪnt/', 'The act of fainting, syncope.', '昏厥、昏倒', 'https://api.dictionaryapi.dev/media/pronunciations/en/faint-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (2422, 'faint', 2, '/feɪnt/', 'The act of fainting, syncope.', '昏厥、昏倒', 'https://api.dictionaryapi.dev/media/pronunciations/en/faint-us.mp3', 1, '2026-06-01 14:48:14'),
 (2423, 'faint', 3, '/feɪnt/', '(of a being) Lacking strength; weak; languid; inclined to lose consciousness', '微弱的、模糊的、頭暈的', 'https://api.dictionaryapi.dev/media/pronunciations/en/faint-us.mp3', 1, '2026-06-01 14:48:14'),
 (2424, 'fair', 1, '/feː(ə)/', 'Something which is fair (in various senses of the adjective).', '市集、博覽會', 'https://api.dictionaryapi.dev/media/pronunciations/en/fair-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -8566,7 +9442,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (2664, 'full', 3, '/fʊl/', 'Containing the maximum possible amount that can fit in the space available.', '滿的、完全的、飽的', 'https://api.dictionaryapi.dev/media/pronunciations/en/full-au.mp3', 1, '2026-06-01 14:48:14'),
 (2665, 'fun', 1, '/fʊn/', 'Amusement, enjoyment or pleasure', '樂趣、好玩的事、娛樂', 'https://api.dictionaryapi.dev/media/pronunciations/en/fun-us.mp3', 1, '2026-06-01 14:48:14'),
 (2666, 'function', 1, '/ˈfʌŋ(k)ʃən/', 'What something does or is used for.', '功能、職責、函數、重大聚會', 'https://api.dictionaryapi.dev/media/pronunciations/en/function-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (2667, 'function', 2, '/ˈfʌŋ(k)ʃən/', 'To have a function.', '運作、起作用、行使職責', 'https://api.dictionaryapi.dev/media/pronunciations/en/function-us.mp3', 1, '2026-06-01 14:48:14'),
 (2668, 'functional', 3, '/ˈfʌŋk(t)ʃnəl/', 'In good working order.', '實用的、功能性的、運轉正常的', 'https://api.dictionaryapi.dev/media/pronunciations/en/functional-us.mp3', 1, '2026-06-01 14:48:14'),
 (2669, 'fund', 1, '/ˈfʌnd/', 'A sum or source of money.', '資金、基金、專款', 'https://api.dictionaryapi.dev/media/pronunciations/en/fund-uk.mp3', 1, '2026-06-01 14:48:14'),
@@ -8812,7 +9688,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (2909, 'handle', 2, '', 'The part of an object which is (designed to be) held in the hand when used or moved.', '處理、對付、觸摸、操縱', 'https://api.dictionaryapi.dev/media/pronunciations/en/handle-au.mp3', 1, '2026-06-01 14:48:14'),
 (2910, 'handsome', 3, '/ˈhæn.səm/', '(of people, things, etc) Having a good appearance; good-looking.', '英俊的、端莊的、可觀的', 'https://api.dictionaryapi.dev/media/pronunciations/en/handsome-uk.mp3', 1, '2026-06-01 14:48:14'),
 (2911, 'handy', 3, '/ˈhæn.di/', 'Easy to use, useful.', '方便的、手邊的、手巧的', 'https://api.dictionaryapi.dev/media/pronunciations/en/handy-1-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (2912, 'hang', 2, '[heɪŋ]', 'To be or remain suspended.', '懸掛、吊、絞死、逗留', 'https://api.dictionaryapi.dev/media/pronunciations/en/hang-us.mp3', 1, '2026-06-01 14:48:14'),
 (2913, 'hanger', 1, '', 'One who hangs, or causes to be hanged; a hangman, paper hanger, etc.', '衣架、掛鉤', 'https://dictionaryapi.dev/hanger', 1, '2026-06-01 14:48:14'),
 (2914, 'happen', 2, '/ˈhæpən/', 'To occur or take place.', '發生、碰巧', 'https://api.dictionaryapi.dev/media/pronunciations/en/happen-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -9054,7 +9930,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (3150, 'hypothesis', 1, '/-əsəs/', 'Used loosely, a tentative conjecture explaining an observation, phenomenon or scientific problem that can be tested by further observation, investigation and/or experimentation. As a scientific term of art, see the attached quotation. Compare to theory, and quotation given there.', '假設、假說', 'https://api.dictionaryapi.dev/media/pronunciations/en/hypothesis-us.mp3', 1, '2026-06-01 14:48:14'),
 (3151, 'hysterical', 3, '/hɪˈstɛɹɪkəl/', 'Of, or arising from hysteria.', '歇斯底里的、歇斯底里般的、極其可笑的', 'https://dictionaryapi.dev/hysterical', 1, '2026-06-01 14:48:14'),
 (3152, 'hysterical', 3, '/hɪˈstɛɹɪkəl/', 'Of, or arising from hysteria.', '歇斯底里的、歇斯底里般的、極其可笑的', 'https://dictionaryapi.dev/hysterical', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (3153, 'I', 1, '', 'The name of the Latin-script letter I.', '我（第一人稱單數主格）', 'https://api.dictionaryapi.dev/media/pronunciations/en/i-1-us.mp3', 1, '2026-06-01 14:48:14'),
 (3154, 'ice', 1, '[ʌɪs]', 'Water in frozen (solid) form.', '冰、冰塊', 'https://api.dictionaryapi.dev/media/pronunciations/en/ice-us.mp3', 1, '2026-06-01 14:48:14'),
 (3155, 'iceberg', 1, '', 'A huge mass of ocean-floating ice which has broken off a glacier or ice shelf', '冰山', 'https://api.dictionaryapi.dev/media/pronunciations/en/iceberg-au.mp3', 1, '2026-06-01 14:48:14'),
@@ -9293,7 +10169,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (3388, 'investigation', 1, '/ɪnˌvɛstəˈɡeɪʃən/', 'The act of investigating; the process of inquiring into or following up; research, especially patient or thorough inquiry or examination', '調查、研究', 'https://api.dictionaryapi.dev/media/pronunciations/en/investigation-us.mp3', 1, '2026-06-01 14:48:14'),
 (3389, 'investigator', 1, '', 'One who investigates.', '調查員、偵查員', 'https://dictionaryapi.dev/investigator', 1, '2026-06-01 14:48:14'),
 (3390, 'investor', 1, '/ɪnˈvɛstɚ/', 'A person who invests money in order to make a profit.', '投資者', '', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (3391, 'invisible', 3, '/ɪnˈvɪzəb(ə)l/', 'Unable to be seen; out of sight; not visible.', '看不見的、隱形的', 'https://api.dictionaryapi.dev/media/pronunciations/en/invisible-us.mp3', 1, '2026-06-01 14:48:14'),
 (3392, 'invitation', 1, '/ɪn.vɪˈteɪ.ʃn̩/', 'The act of inviting; solicitation; the requesting of a person\'s company.', '邀請、邀請函、請帖', 'https://api.dictionaryapi.dev/media/pronunciations/en/invitation-us.mp3', 1, '2026-06-01 14:48:14'),
 (3393, 'invite', 2, '/ɪnˈvaɪt/', 'To ask for the presence or participation of someone or something.', '邀請、招致、吸引', 'https://api.dictionaryapi.dev/media/pronunciations/en/invite-1-uk.mp3', 1, '2026-06-01 14:48:14'),
@@ -9534,7 +10410,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (3628, 'lie', 2, '/laɪ̯/', 'To rest in a horizontal position on a surface.', '躺、臥、位於、說謊', 'https://api.dictionaryapi.dev/media/pronunciations/en/lie-us.mp3', 1, '2026-06-01 14:48:14'),
 (3629, 'lieutenant', 1, '/ləˈtɛnənt/', 'The lowest Junior Commissioned Officer rank(s) in many military forces, often Army and Marines.', '陸軍中尉、海軍上尉', 'https://api.dictionaryapi.dev/media/pronunciations/en/lieutenant-au.mp3', 1, '2026-06-01 14:48:14'),
 (3630, 'life', 1, '/laɪf/', 'The state of organisms preceding their death, characterized by biological processes such as metabolism and reproduction and distinguishing them from inanimate objects; the state of being alive and living.', '生命、生物、生活、一生', 'https://api.dictionaryapi.dev/media/pronunciations/en/life-uk.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (3631, 'lifeboat', 1, '/ˈlaɪfˌbəʊt/', 'A boat especially designed for saving the lives of shipwrecked people or people in distress at sea (either launched from the shore with a crew, or else carried on board a larger ship)', '救生艇', 'https://api.dictionaryapi.dev/media/pronunciations/en/lifeboat-us.mp3', 1, '2026-06-01 14:48:14'),
 (3632, 'lifeguard', 1, '', 'A bodyguard or unit of bodyguards, a guard of someone\'s (especially a king\'s) life or person.', '救生員', 'https://dictionaryapi.dev/lifeguard', 1, '2026-06-01 14:48:14'),
 (3633, 'lifelong', 3, '', 'Extending for the entire duration of life.', '終身的、畢生的', 'https://dictionaryapi.dev/lifelong', 1, '2026-06-01 14:48:14'),
@@ -9774,7 +10650,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (3867, 'measure', 2, '/ˈmɛʒə/', 'To ascertain the quantity of a unit of material via calculated comparison with respect to a standard.', '測量、計量、估計', 'https://api.dictionaryapi.dev/media/pronunciations/en/measure-uk.mp3', 1, '2026-06-01 14:48:14'),
 (3868, 'meat', 1, '/miːt/', 'The flesh (muscle tissue) of an animal used as food.', '肉、肉類', 'https://api.dictionaryapi.dev/media/pronunciations/en/meat-uk.mp3', 1, '2026-06-01 14:48:14'),
 (3869, 'mechanical', 3, '/mɪˈkanɪk(ə)l/', 'Characteristic of someone who does manual labour for a living; coarse, vulgar.', '機械的、機械製的、呆板的', 'https://api.dictionaryapi.dev/media/pronunciations/en/mechanical-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (3870, 'mechanics', 1, '', 'The branch of physics that deals with the action of forces on material objects with mass', '力學、機械學、技術細節', 'https://dictionaryapi.dev/mechanics', 1, '2026-06-01 14:48:14'),
 (3871, 'medal', 1, '[ˈmeɾ.ɫ̩]', 'A stamped metal disc used as a personal ornament, a charm, or a religious object.', '獎章、勳章', 'https://api.dictionaryapi.dev/media/pronunciations/en/medal-uk.mp3', 1, '2026-06-01 14:48:14'),
 (3872, 'media', 1, '/ˈmiːdɪə/', 'The middle layer of the wall of a blood vessel or lymph vessel which is composed of connective and muscular tissue.', '媒體、媒介物（medium的複數）', 'https://dictionaryapi.dev/media', 1, '2026-06-01 14:48:14'),
@@ -10010,7 +10886,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (4102, 'neat', 3, '/niːt/', 'Clean, tidy; free from dirt or impurities.', '整潔的、乾淨的、工整的', 'https://api.dictionaryapi.dev/media/pronunciations/en/neat-us.mp3', 1, '2026-06-01 14:48:14'),
 (4103, 'necessary', 3, '/ˈnɛsəsɹɪ/', 'Required, essential, whether logically inescapable or needed in order to achieve a desired result or avoid some penalty.', '必要的、必需的、不可避免的', 'https://api.dictionaryapi.dev/media/pronunciations/en/necessary-us.mp3', 1, '2026-06-01 14:48:14'),
 (4104, 'necessity', 1, '/nɪˈsɛsəti/', 'The quality or state of being necessary, unavoidable, or absolutely requisite.', '必需品、需要、必然性', 'https://api.dictionaryapi.dev/media/pronunciations/en/necessity-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (4105, 'neck', 1, '/nɛk/', 'The part of the body connecting the head and the trunk found in humans and some animals.', '脖子、頸部', 'https://api.dictionaryapi.dev/media/pronunciations/en/neck-us.mp3', 1, '2026-06-01 14:48:14'),
 (4106, 'necklace', 1, '/ˈnɛkləs/', 'An article of jewelry that is worn around the neck, most often made of a string of precious metal, pearls, gems, beads or shells, and sometimes having a pendant attached.', '項鍊', 'https://dictionaryapi.dev/necklace', 1, '2026-06-01 14:48:14'),
 (4107, 'necktie', 1, '/ˈnɛk.taɪ/', 'A strip of cloth worn around the neck and tied in the front. See also bowtie.', '領帶', 'https://api.dictionaryapi.dev/media/pronunciations/en/necktie-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -10258,7 +11134,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (4349, 'pain', 1, '/peɪn/', 'An ache or bodily suffering, or an instance of this; an unpleasant sensation, resulting from a derangement of functions, disease, or injury by violence; hurt.', '疼痛、痛苦、苦惱', 'https://api.dictionaryapi.dev/media/pronunciations/en/pain-1-uk.mp3', 1, '2026-06-01 14:48:14'),
 (4350, 'painful', 3, '/ˈpeɪn.fəl/', 'Causing pain or distress, either physical or mental.', '痛苦的、令人不快的、困難的', 'https://api.dictionaryapi.dev/media/pronunciations/en/painful-us.mp3', 1, '2026-06-01 14:48:14'),
 (4351, 'painfully', 2, '/ˈpeɪnfəli/', 'In a painful manner; as if in pain.', '痛苦地、費力地（原檔標記 2，實為副詞）', 'https://api.dictionaryapi.dev/media/pronunciations/en/painfully-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (4352, 'paint', 1, '/peɪnt/', 'A substance that is applied as a liquid or paste, and dries into a solid coating that protects or adds color/colour to an object or surface to which it has been applied.', '油漆、塗料、顏料', 'https://api.dictionaryapi.dev/media/pronunciations/en/paint-us.mp3', 1, '2026-06-01 14:48:14'),
 (4353, 'paint', 2, '/peɪnt/', 'To apply paint to.', '繪畫、塗油漆、刷牆', 'https://api.dictionaryapi.dev/media/pronunciations/en/paint-us.mp3', 1, '2026-06-01 14:48:14'),
 (4354, 'painter', 1, '/ˈpeɪntə/', 'An artist who paints pictures.', '畫家、油漆工', 'https://api.dictionaryapi.dev/media/pronunciations/en/painter-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -10491,7 +11367,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (4581, 'plan', 2, '/plæn/', 'To design (a building, machine, etc.).', '計劃、打算、設計', 'https://api.dictionaryapi.dev/media/pronunciations/en/plan-us.mp3', 1, '2026-06-01 14:48:14'),
 (4582, 'plane', 1, '/pleɪn/', 'A level or flat surface.', '飛機、平面', 'https://api.dictionaryapi.dev/media/pronunciations/en/plane-us.mp3', 1, '2026-06-01 14:48:14'),
 (4583, 'planet', 1, '/ˈplænət/', 'Each of the seven major bodies which move relative to the fixed stars in the night sky—the Moon, Mercury, Venus, the Sun, Mars, Jupiter and Saturn.', '行星', 'https://api.dictionaryapi.dev/media/pronunciations/en/planet-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (4584, 'planetary', 3, '/ˈplæ.nə.ˌtɛr.i/', 'Of, or relating to planets, or the orbital motion of planets.', '行星的、在全球範圍的', 'https://api.dictionaryapi.dev/media/pronunciations/en/planetary-uk.mp3', 1, '2026-06-01 14:48:14'),
 (4585, 'planning', 1, '/ˈplænɪŋ/', 'Action of the verb to plan.', '計畫、規劃', 'https://dictionaryapi.dev/planning', 1, '2026-06-01 14:48:14'),
 (4586, 'plant', 1, '/plænt/', 'An organism that is not an animal, especially an organism capable of photosynthesis. Typically a small or herbaceous organism of this kind, rather than a tree.', '植物、工廠、車間', 'https://api.dictionaryapi.dev/media/pronunciations/en/plant-uk.mp3', 1, '2026-06-01 14:48:14'),
@@ -10728,7 +11604,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (4817, 'pronoun', 1, '/ˈpɹəʊnaʊn/', '(grammar) A type of noun that refers anaphorically to another noun or noun phrase, but which cannot ordinarily be preceded by a determiner and rarely takes an attributive adjective. English examples include I, you, him, who, me, my, each other.', '代名詞', 'https://api.dictionaryapi.dev/media/pronunciations/en/pronoun-us.mp3', 1, '2026-06-01 14:48:14'),
 (4818, 'pronounce', 2, '/pɹəˈnaʊns/', 'To declare formally, officially or ceremoniously.', '發音、宣告、宣判', 'https://api.dictionaryapi.dev/media/pronunciations/en/pronounce-us.mp3', 1, '2026-06-01 14:48:14'),
 (4819, 'proof', 1, '/pɹʉːf/', 'An effort, process, or operation designed to establish or discover a fact or truth; an act of testing; a test; a trial.', '證據、證明、校樣', 'https://api.dictionaryapi.dev/media/pronunciations/en/proof-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (4820, 'proper', 3, '/ˈpɹɔp.ə/', '(heading) Suitable.', '適合的、適當的、正確的、體面的', 'https://api.dictionaryapi.dev/media/pronunciations/en/proper-us.mp3', 1, '2026-06-01 14:48:14'),
 (4821, 'property', 1, '/ˈpɹɒp.ət.i/', 'Something that is owned.', '財產、資產、房產、特性', 'https://api.dictionaryapi.dev/media/pronunciations/en/property-us.mp3', 1, '2026-06-01 14:48:14'),
 (4822, 'prophesy', 2, '/ˈpɹɒfɪsaɪ/', 'To speak or write with divine inspiration; to act as prophet.', '預言、預告', 'https://dictionaryapi.dev/prophesy', 1, '2026-06-01 14:48:14'),
@@ -10968,7 +11844,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (5056, 'reluctantly', 4, '/ɹɪˈlʌktəntli/', 'In a reluctant or hesitant manner.', '不情願地、勉強地', 'https://dictionaryapi.dev/reluctantly', 1, '2026-06-01 14:48:14'),
 (5057, 'rely', 2, '/ɹɪˈlaɪ/', '(with on or upon, formerly also with in) to trust; to have confidence in; to depend.', '依賴、依靠、信賴', 'https://api.dictionaryapi.dev/media/pronunciations/en/rely-us.mp3', 1, '2026-06-01 14:48:14'),
 (5058, 'remain', 2, '/ɹɪˈmeɪn/', 'To stay behind while others withdraw; to be left after others have been removed or destroyed; to be left after a number or quantity has been subtracted or cut off; to be left as not included or comprised.', '保持、留下、剩餘、依然是', 'https://api.dictionaryapi.dev/media/pronunciations/en/remain-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (5059, 'remains', 1, '/ɹɪˈmeɪnz/', '(chiefly in the plural) That which is left; relic; remainder.', '剩餘物、遺跡、遺體', 'https://api.dictionaryapi.dev/media/pronunciations/en/remains-us.mp3', 1, '2026-06-01 14:48:14'),
 (5060, 'remark', 1, '/ɹɪˈmɑːk/', 'An act of pointing out or noticing; notice or observation.', '談論、評論、注意', 'https://api.dictionaryapi.dev/media/pronunciations/en/remark-1-us.mp3', 1, '2026-06-01 14:48:14'),
 (5061, 'remark', 2, '/ɹɪˈmɑːk/', 'To make a remark or remarks; to comment.', '談論、評論、注意到', 'https://api.dictionaryapi.dev/media/pronunciations/en/remark-1-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -11205,7 +12081,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (5292, 'satisfy', 2, '/ˈsætɪsfaɪ/', 'To do enough for; to meet the needs of; to fulfill the wishes or requirements of.', '使滿意、滿足、使信服', 'https://api.dictionaryapi.dev/media/pronunciations/en/satisfy-us.mp3', 1, '2026-06-01 14:48:14'),
 (5293, 'Saturday', 1, '', 'N/A', '星期六', NULL, 1, '2026-06-01 14:48:14'),
 (5294, 'sauce', 1, '', 'A liquid (often thickened) condiment or accompaniment to food.', '醬汁、調味汁', 'https://api.dictionaryapi.dev/media/pronunciations/en/sauce-au.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (5295, 'sausage', 1, '/ˈsɑsɪd͡ʒ/', 'A food made of ground meat (or meat substitute) and seasoning, packed in a section of the animal\'s intestine, or in a similarly cylindrical shaped synthetic casing; a length of this food.', '香腸', 'https://api.dictionaryapi.dev/media/pronunciations/en/sausage-us.mp3', 1, '2026-06-01 14:48:14'),
 (5296, 'savage', 3, '/ˈsævɪdʒ/', 'Wild; not cultivated.', '野蠻的、殘酷的、未開化的', 'https://api.dictionaryapi.dev/media/pronunciations/en/savage-us.mp3', 1, '2026-06-01 14:48:14'),
 (5297, 'save', 2, '/seɪv/', 'To prevent harm or difficulty.', '拯救、儲蓄、節省、保留', 'https://api.dictionaryapi.dev/media/pronunciations/en/save-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -11445,7 +12321,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (5531, 'size', 1, '/saɪz/', '(obsolete outside dialectal) An assize.', '大小、尺寸、規模', 'https://api.dictionaryapi.dev/media/pronunciations/en/size-us.mp3', 1, '2026-06-01 14:48:14'),
 (5532, 'skate', 1, '/skeɪt/', 'A light boot, fitted with a blade, used for ice skating.', '溜冰鞋、輪鞋', 'https://api.dictionaryapi.dev/media/pronunciations/en/skate-us.mp3', 1, '2026-06-01 14:48:14'),
 (5533, 'skate', 2, '/skeɪt/', 'To move along a surface (ice or ground) using skates.', '溜冰、滑旱冰', 'https://api.dictionaryapi.dev/media/pronunciations/en/skate-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (5534, 'skeleton', 1, '/ˈskɛlətən/', 'The system that provides support to an organism, internal and made up of bones and cartilage in vertebrates, external in some other animals.', '骨骼、骨架、梗概', 'https://api.dictionaryapi.dev/media/pronunciations/en/skeleton-us.mp3', 1, '2026-06-01 14:48:14'),
 (5535, 'sketch', 1, '/skɛtʃ/', 'A rapidly executed freehand drawing that is not intended as a finished work, often consisting of a multitude of overlapping lines.', '素描、草圖、隨筆', 'https://api.dictionaryapi.dev/media/pronunciations/en/sketch-us.mp3', 1, '2026-06-01 14:48:14'),
 (5536, 'sketch', 2, '/skɛtʃ/', 'To make a brief, basic drawing.', '畫素描、草擬', 'https://api.dictionaryapi.dev/media/pronunciations/en/sketch-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -11688,7 +12564,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (5773, 'stepchild', 1, '', 'The child of one\'s spouse but not one\'s own.', '繼子女', 'https://dictionaryapi.dev/stepchild', 1, '2026-06-01 14:48:14'),
 (5774, 'stereo', 1, '/ˈstɛɹi.əʊ/', 'A system of recording or reproducing sound that uses two channels, each playing a portion of the original sound in such a way as to create the illusion of locating the sound at a particular position, each offset from the other, thereby more accurately imitating the location of the original sound when the recorded or reproduced sound is heard.', '立體聲音響、立體聲', 'https://dictionaryapi.dev/stereo', 1, '2026-06-01 14:48:14'),
 (5775, 'stereotype', 1, '/ˈstɛ.ɹi.əˌtaɪp/', 'A conventional, formulaic, and often oversimplified or exaggerated conception, opinion, or image of (a person).', '刻板印象、成見', 'https://dictionaryapi.dev/stereotype', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (5776, 'steward', 1, '/ˈstjuː.əd/', 'A person who manages the property or affairs for another entity, particularly the chief administrator of a medieval manor.', '男服務員、管家、乘務員', 'https://api.dictionaryapi.dev/media/pronunciations/en/steward-us.mp3', 1, '2026-06-01 14:48:14'),
 (5777, 'stick', 2, '/stɪk/', 'To cut a piece of wood to be the stick member of a cope-and-stick joint.', '黏貼、刺入、堅持、卡住', 'https://api.dictionaryapi.dev/media/pronunciations/en/stick-us.mp3', 1, '2026-06-01 14:48:14'),
 (5778, 'sticky', 3, '/ˈstɪki/', 'Able or likely to stick.', '黏的、黏性的、棘手的', 'https://api.dictionaryapi.dev/media/pronunciations/en/sticky-au.mp3', 1, '2026-06-01 14:48:14'),
@@ -11927,7 +12803,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (6011, 'teacher', 1, '/ˈtiːt͡ʃə/', 'A person who teaches, especially one employed in a school.', '教師、老師', 'https://api.dictionaryapi.dev/media/pronunciations/en/teacher-uk.mp3', 1, '2026-06-01 14:48:14'),
 (6012, 'team', 1, '/tiːm/', 'A set of draught animals, such as two horses in front of a carriage.', '隊、組、團隊', 'https://api.dictionaryapi.dev/media/pronunciations/en/team-us.mp3', 1, '2026-06-01 14:48:14'),
 (6013, 'tear', 1, '', 'A hole or break caused by tearing.', '眼淚', 'https://dictionaryapi.dev/tear', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (6014, 'technical', 3, '/ˈtɛk.nɪk.əl/', 'Of or pertaining to the useful or mechanic arts, or to any academic, legal, science, engineering, business, or the like terminology with specific and precise meaning or (frequently, as a degree of distinction) shades of meaning; specially appropriate to any art, science or engineering field, or business', '技術的、專門的、工業的', 'https://api.dictionaryapi.dev/media/pronunciations/en/technical-us.mp3', 1, '2026-06-01 14:48:14'),
 (6015, 'technician', 1, '/tekˈnɪʃən/', 'A person who studies or practises technology.', '技術人員、技師', 'https://dictionaryapi.dev/technician', 1, '2026-06-01 14:48:14'),
 (6016, 'technique', 1, '/tɛkˈniːk/', 'The practical aspects of a given art, occupation etc.; formal requirements.', '技術、技巧、技能', 'https://dictionaryapi.dev/technique', 1, '2026-06-01 14:48:14'),
@@ -12176,7 +13052,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (6259, 'trigger', 1, '/ˈtɹɪɡə/', 'A finger-operated lever used to fire a gun.', '（槍的）扳機、觸發器', 'https://dictionaryapi.dev/trigger', 1, '2026-06-01 14:48:14'),
 (6260, 'trigger', 2, '/ˈtɹɪɡə/', 'To fire a weapon.', '觸發、引起、引發', 'https://dictionaryapi.dev/trigger', 1, '2026-06-01 14:48:14'),
 (6261, 'trim', 2, '/tɹɪm/', 'To reduce slightly; to cut; especially, to remove excess.', '修剪、修整、削減', 'https://api.dictionaryapi.dev/media/pronunciations/en/trim-us.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (6262, 'trip', 1, '/tɹɪp/', 'A journey; an excursion or jaunt', '旅行、旅程', 'https://api.dictionaryapi.dev/media/pronunciations/en/trip-1-uk.mp3', 1, '2026-06-01 14:48:14'),
 (6263, 'triumph', 1, '/ˈtɹaɪ.ʌmf/', 'A conclusive success following an effort, conflict, or confrontation of obstacles; victory; conquest.', '巨大成功、勝利', 'https://api.dictionaryapi.dev/media/pronunciations/en/triumph-us.mp3', 1, '2026-06-01 14:48:14'),
 (6264, 'triumph', 2, '/ˈtɹaɪ.ʌmf/', 'A conclusive success following an effort, conflict, or confrontation of obstacles; victory; conquest.', '獲勝、凱旋、成功', 'https://api.dictionaryapi.dev/media/pronunciations/en/triumph-us.mp3', 1, '2026-06-01 14:48:14'),
@@ -12423,7 +13299,7 @@ INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `
 (6505, 'wagon', 1, '', 'A four-wheeled cart for hauling loads.', '馬車、貨車', 'https://api.dictionaryapi.dev/media/pronunciations/en/wagon-au.mp3', 1, '2026-06-01 14:48:14'),
 (6506, 'waist', 1, '/weɪst/', 'The part of the body between the pelvis and the stomach.', '腰、腰部', 'https://dictionaryapi.dev/waist', 1, '2026-06-01 14:48:14'),
 (6507, 'wait', 1, '/weɪt/', 'A delay.', '等待、伺候', 'https://api.dictionaryapi.dev/media/pronunciations/en/wait-uk.mp3', 1, '2026-06-01 14:48:14');
-INSERT INTO `words` (`id`, `word`, `part_of_speech`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
+INSERT INTO `words` (`id`, `word`, `part_of_speech_id`, `phonetic`, `definition`, `translation`, `audio_url`, `source`, `created_at`) VALUES
 (6508, 'wait', 2, '/weɪt/', 'To delay movement or action until the arrival or occurrence of; to await. (Now generally superseded by “wait for”.)', '等待、期待', 'https://api.dictionaryapi.dev/media/pronunciations/en/wait-uk.mp3', 1, '2026-06-01 14:48:14'),
 (6509, 'waiter', 1, '/ˈweɪtə/', 'A male or female attendant who serves customers at their tables in a restaurant, café or similar.', '服務生、男侍者', 'https://api.dictionaryapi.dev/media/pronunciations/en/waiter-us.mp3', 1, '2026-06-01 14:48:14'),
 (6510, 'waitress', 1, '', 'A female attendant who serves customers in a restaurant, café, or similar.', '女服務生、女侍者', 'https://dictionaryapi.dev/waitress', 1, '2026-06-01 14:48:14'),
@@ -12544,7 +13420,8 @@ ALTER TABLE `categories`
 --
 ALTER TABLE `css_terms`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_css_terms_category_id_categories_id` (`category_id`) USING BTREE;
+  ADD KEY `fk_css_terms_category1_id_categories_id` (`category1_id`) USING BTREE,
+  ADD KEY `fk_css_terms_category2_id_categories_id` (`category2_id`) USING BTREE;
 
 --
 -- 資料表索引 `fetch_progress`
@@ -12557,7 +13434,8 @@ ALTER TABLE `fetch_progress`
 --
 ALTER TABLE `html_terms`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_html_terms_category_id_categories_id` (`category_id`) USING BTREE;
+  ADD KEY `fk_html_terms_category1_id_categories_id` (`category1_id`) USING BTREE,
+  ADD KEY `fk_html_terms_category2_id_categories_id` (`category2_id`) USING BTREE;
 
 --
 -- 資料表索引 `learners`
@@ -12570,7 +13448,7 @@ ALTER TABLE `learners`
 --
 ALTER TABLE `learning_records`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_learning_records_learner_id_learners_id` (`learner_id`);
+  ADD KEY `fk_learning_records_learner_id_learners_id` (`learner_id`) USING BTREE;
 
 --
 -- 資料表索引 `sources`
@@ -12583,8 +13461,8 @@ ALTER TABLE `sources`
 --
 ALTER TABLE `words`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_words_part_of_speech_parts_of_speech_id` (`part_of_speech`) USING BTREE,
-  ADD KEY `fk_words_source_sources_id` (`source`) USING BTREE;
+  ADD KEY `fk_words_source_sources_id` (`source`) USING BTREE,
+  ADD KEY `fk_words_category_id_categories_id` (`part_of_speech_id`) USING BTREE;
 
 --
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
@@ -12594,19 +13472,19 @@ ALTER TABLE `words`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `css_terms`
 --
 ALTER TABLE `css_terms`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=566;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `html_terms`
 --
 ALTER TABLE `html_terms`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=297;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `learners`
@@ -12618,7 +13496,7 @@ ALTER TABLE `learners`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `learning_records`
 --
 ALTER TABLE `learning_records`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `sources`
@@ -12640,13 +13518,15 @@ ALTER TABLE `words`
 -- 資料表的限制式 `css_terms`
 --
 ALTER TABLE `css_terms`
-  ADD CONSTRAINT `fk_css_terms_category_id_categories_id` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_css_terms_category1_id_categories_id` FOREIGN KEY (`category1_id`) REFERENCES `categories` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_css_terms_category2_id_categories_id` FOREIGN KEY (`category2_id`) REFERENCES `categories` (`id`) ON UPDATE CASCADE;
 
 --
 -- 資料表的限制式 `html_terms`
 --
 ALTER TABLE `html_terms`
-  ADD CONSTRAINT `fk_html_terms_category_id_categories_id` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_html_terms_category1_id_categories_id` FOREIGN KEY (`category1_id`) REFERENCES `categories` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_html_terms_category2_id_categories_id` FOREIGN KEY (`category2_id`) REFERENCES `categories` (`id`) ON UPDATE CASCADE;
 
 --
 -- 資料表的限制式 `learning_records`
@@ -12658,7 +13538,7 @@ ALTER TABLE `learning_records`
 -- 資料表的限制式 `words`
 --
 ALTER TABLE `words`
-  ADD CONSTRAINT `fk_words_part_of_speech_parts_of_speech_id` FOREIGN KEY (`part_of_speech`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_words_category_id_categories_id` FOREIGN KEY (`part_of_speech_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_words_source_sources_id` FOREIGN KEY (`source`) REFERENCES `sources` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 

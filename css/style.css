@@ -1,29 +1,23 @@
+/* =========================================================================
+   1. 全局初始化與核心佈局 (Global Styles & Core Layout)
+   ========================================================================= */
 * {
     box-sizing: border-box;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
 }
 
 html, body {
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f4f7f6; /* 輕盈的北歐風淺灰底色 */
+    color: #2c3e50;
 }
 
 body {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    height: 15vh;
-    padding: 16px 20px;
-    background-color: aqua;
 }
 
 main {
@@ -32,6 +26,23 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px 0;
+}
+
+/* =========================================================================
+   2. 導覽列與頁尾最佳化 (Header & Footer Styles)
+   ========================================================================= */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 10vh;
+    min-height: 70px;
+    padding: 0 40px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
 }
 
 footer {
@@ -39,167 +50,97 @@ footer {
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 10vh;
-    padding: 16px 20px;
-    font-size: 1.5rem;
-    background-color: aqua;
+    height: 8vh;
+    min-height: 50px;
+    font-size: 1rem;
+    color: #7f8c8d;
+    background-color: #ffffff;
+    border-top: 1px solid #eef2f3;
 }
 
-a {
+/* 導覽列左右區塊容器 */
+.left, .right {
     display: flex;
-    justify-content: center;
     align-items: center;
-    float: left;
-    width: 400px;
-    height: 150px;
-    margin: 100px 60px;
-    background-color: chartreuse;
-    color: blue;
-    font-size: 4rem;
-    font-weight: bold;
-    text-decoration: none;
-    border: 1px solid black;
-    border-radius: 60px;
+    gap: 12px;
 }
 
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-width: 420px;
-    margin: 60px auto;
-    padding: 40px;
-    background-color: white;
-}
-
+/* =========================================================================
+   3. 按鈕與下拉選單元件 (Buttons & Dropdown Navigation)
+   ========================================================================= */
+/* 萬用導覽按鈕 */
 .button {
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    width: 150px;
-    height: 60px;
-    margin: 10px;
-    background-color: blueviolet;
-    color: white;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.6rem;
+    width: 120px;
+    height: 42px;
+    background-color: #34495e;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 500;
     text-decoration: none;
-    border: 1px solid black;
-    border-radius: 15px;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+    cursor: pointer;
 }
 
-.left>a {
-    float: left;
+.button:hover {
+    background-color: #2c3e50;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(44, 62, 80, 0.15);
 }
 
-.right>a {
-    float: right;
-}
-
+/* 下拉選單區塊 */
 .dropdown-block {
     position: relative;
-    float: left;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
-    top: 90px;
+    top: 50px;
     left: 0;
-    width: 100%;
+    width: 120px;
     z-index: 999;
 }
 
 .dropdown-content.show {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    background-color: #ffffff;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.2s ease-out;
 }
 
-iframe {
-    width: 100%;
-    height: 100%;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
-
-fieldset {
-    display: grid;
-    place-items: center;
-    width: 40%;
-    height: 80%;
-    margin: auto;
-}
-
-table {
-    width: 80%;
-    height: 80%;
-    border: 1px solid black;
-}
-
-table.login {
-    width: 30%;
-    height: 30%;
-}
-
-td {
-    border: 1px solid black;
-}
-
-td:first-child {
-    width: 30%;
-    text-align: center;
-}
-
-td:nth-child(2) {
-    width: 70%;
-    padding: 20px;
-}
-
-td.action {
-    text-align: center;
-}
-
-td.action>input {
-    margin: 0px 20px;
-    padding: 10px 20px;
-    cursor: pointer;
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 20px auto;
-    padding: 20px;
-}
-
+/* =========================================================================
+   4. 3D 卡牌機制與外觀 (3D Flashcard Animation & Styles)
+   ========================================================================= */
 .card-board {
-    perspective: 400px;
+    perspective: 1000px; /* 大幅提升 3D 翻轉的立體縱深感 */
     width: 400px;
     height: 400px;
-    margin: 30px;
-    cursor: pointer;
+    margin-bottom: 24px;
 }
 
 .card {
     position: relative;
-    width: 400px;
-    height: 400px;
-    box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, 0.1), 0px 8px 10px -6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
     transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid black;
-    border-radius: 40px;
+    border-radius: 24px;
+    border: none;
 }
 
 .face {
@@ -210,72 +151,84 @@ td.action>input {
     align-items: center;
     width: 100%;
     height: 100%;
-    padding: 24px;
-    color: white;
-    font-size: 3rem;
-    border-radius: 40px;
-    backface-visibility: hidden;
+    padding: 32px;
+    border-radius: 24px;
+    backface-visibility: hidden; /* 翻轉時隱藏背面，防止穿透爆框 */
 }
 
+/* 卡片正面：優雅溫和的淡桃粉 */
 .front {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: pink;
+    background: linear-gradient(135deg, #fff0f2 0%, #ffe3e7 100%);
+    color: #2c3e50;
 }
 
+/* 卡片背面：沉穩的沉靜藍 */
 .back {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    background-color: blue;
+    background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    color: #ffffff;
     transform: rotateY(180deg);
 }
 
-.true-false {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    top: 20px;
-    width: 400px;
-    height: 100px;
-    border: 1px solid black;
-    border-radius: 40px;
+/* =========================================================================
+   5. 卡片內部文字與語音按鈕 (Card Typography & Controls)
+   ========================================================================= */
+.word {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
 }
 
-button {
-    cursor: pointer;
+/* 分類標籤樣式群組 */
+.category1, .category2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    margin: 0 6px;
+    color: #4a5568;
 }
 
-.true-false>button {
-    width: 150px;
-    height: 50px;
-    margin: 10px;
-    font-size: 1.6rem;
-    border: 1px solid black;
-    border-radius: 40px;
+.category2 {
+    font-family: "Lucida Sans Unicode", "Segoe UI", sans-serif;
+    font-style: italic;
 }
 
+/* 智慧發音按鈕 */
 button#audio {
-    width: 40px;
-    height: 40px;
-    margin: 10px;
-    vertical-align: middle;
-    font-size: 1rem;
-    border: 1px solid black;
-    border-radius: 10px;
+    width: 50px;
+    height: 38px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background-color: #ffffff;
+    color: #2c3e50;
+    border: 1px solid #dcdde1;
+    border-radius: 8px;
+    margin-left: 8px;
+    transition: all 0.2s;
 }
 
+button#audio:hover {
+    background-color: #f8f9fa;
+    border-color: #b2bec3;
+    transform: scale(1.05);
+}
+
+/* =========================================================================
+   6. 頂部狀態標籤與卡片背面文字 (Status Badges & Card Details)
+   ========================================================================= */
 .new {
     position: absolute;
     top: 24px;
     right: 24px;
-    display: inline-block;
-    color: red;
-    font-size: 1.2rem;
+    color: #e74c3c;
+    font-size: 0.85rem;
+    font-weight: bold;
+    background-color: #fadbd8;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
 }
 
 .learning-statement {
@@ -285,51 +238,143 @@ button#audio {
 }
 
 .learning-statement span {
-    display: inline-block;
-    margin: 4px;
-    font-size: 1rem;
-}
-
-.word {
-    position: relative;
-    bottom: 40px;
-    font-size: 4rem;
-}
-
-.category1 {
-    margin: 20px;
-    font-size: 1.6rem;
-}
-
-.category2 {
-    font-size: 1.6rem;
-    font-family: "Lucida Sans Unicode", "Arial Unicode MS", "Segoe UI", sans-serif;
-}
-
-.definition {
-    height: 40%;
-    text-align: justify;
-    font-size: 1.4rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-right: 6px;
 }
 
 .translation {
-    display: block;
-    text-align: justify;
-    font-size: 1.4rem;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
 }
 
-.container legend {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    padding: 0 12px;
-    letter-spacing: 1px;
+.definition {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    text-align: center;
+    color: #b2bec3;
+    max-height: 120px;
+    overflow: hidden;
+}
+
+/* =========================================================================
+   7. 智慧兩欄式首頁佈局 (Two-Column Main Dashboard Layout)
+   ========================================================================= */
+.main-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    align-items: flex-start;
+}
+
+.game-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* =========================================================================
+   8. 下方作答操作按鈕區 (Bottom Action Buttons Bar)
+   ========================================================================= */
+.true-false {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    height: 80px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.true-false > button {
+    width: 160px;
+    height: 46px;
+    margin: 0 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+/* 認得與不認得按鈕莫蘭迪配色調教 */
+.true-false > button:first-child {
+    background-color: #2ecc71;
+    color: white;
+}
+.true-false > button:first-child:hover { background-color: #27ae60; }
+
+.true-false > button:last-child {
+    background-color: #e74c3c;
+    color: white;
+}
+.true-false > button:last-child:hover { background-color: #c0392b; }
+
+/* =========================================================================
+   9. 右側規則說明面板與資料庫圖例 (Rules Sidebar Panel)
+   ========================================================================= */
+.rules-sidebar {
+    width: 380px;
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    padding: 26px;
+    border: 1px solid #edf2f7;
+}
+
+.rules-sidebar h3 {
+    margin-bottom: 15px;
+    color: #2a9d8f;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #2a9d8f;
+    padding-bottom: 8px;
+}
+
+.rules-section { margin-bottom: 20px; }
+.rules-sidebar h4 { margin-bottom: 6px; color: #2c3e50; font-size: 1rem; }
+.rules-sidebar p { font-size: 0.9rem; line-height: 1.5; color: #5a6a85; margin-bottom: 6px; }
+.rules-sidebar ul { padding-left: 18px; font-size: 0.85rem; line-height: 1.6; color: #64748b; }
+
+.level-badge-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.badge { background-color: #e6f7f4; color: #2a9d8f; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+
+/* 智慧解碼分類圖例 */
+.category-legend-group { display: flex; flex-direction: column; gap: 8px; background-color: #f8f9fa; padding: 12px; border-radius: 10px; margin-top: 8px; }
+.legend-title { font-size: 0.8rem; font-weight: bold; color: #64748b; display: block; margin-bottom: 4px; }
+.legend-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-item { font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+
+.btn-words { background-color: #e0f2fe; color: #0369a1; }
+.btn-html { background-color: #ffedd5; color: #c2410c; }
+.btn-css { background-color: #f3e8ff; color: #6b21a8; }
+
+.finished-box { text-align: center; padding: 40px 10px; }
+
+/* =========================================================================
+   10. 後台表單與資料庫表格優化 (Forms & Console Tables Styles)
+   ========================================================================= */
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 450px;
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
 .form-group {
-    margin-top: 24px;
+    margin-bottom: 18px;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -338,66 +383,105 @@ button#audio {
 .form-group label {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #475569;
-    margin-bottom: 8px;
-    text-align: left;
+    color: #4a5568;
+    margin-bottom: 6px;
 }
 
 .form-group input {
-    padding: 12px 16px;
-    font-size: 1rem;
+    padding: 10px 14px;
+    font-size: 0.95rem;
     border: 1.5px solid #cbd5e1;
     border-radius: 8px;
-    color: #334155;
     background-color: #f8fafc;
-    transition: all 0.25s ease;
     outline: none;
-    width: 100%;
+    transition: all 0.2s;
 }
 
 .form-group input:focus {
     border-color: #3b82f6;
     background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .button-group {
-    margin-top: 64px;
+    margin-top: 24px;
     display: flex;
-    gap: 16px;
+    gap: 12px;
     width: 100%;
 }
 
 .button-group button {
     flex: 1;
-    padding: 14px 0;
-    font-size: 1rem;
+    padding: 12px 0;
+    font-size: 0.95rem;
     font-weight: 600;
     border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
     border: none;
-    white-space: nowrap;
+    cursor: pointer;
 }
 
-.button-group button[type="submit"] {
-    background-color: #2563eb;
-    color: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+.button-group button[type="submit"] { background-color: #2563eb; color: #ffffff; }
+.button-group button[type="button"] { background-color: #f1f5f9; color: #475569; }
+
+/* 後台 Console 管理表格優化 */
+table {
+    width: 90%;
+    max-width: 1000px;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    margin: 40px auto;
 }
 
-.button-group button[type="submit"]:hover {
-    background-color: #1d4ed8;
-    transform: translateY(-1px);
+td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 0.95rem;
 }
 
-.button-group button[type="button"] {
-    background-color: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-}
+td:first-child { background-color: #f8fafc; font-weight: 600; color: #4a5568; }
 
-.button-group button[type="button"]:hover {
-    background-color: #e2e8f0;
-    color: #1e293b;
+/* =========================================================================
+   11. 📱 RWD 跨裝置行動版響應式設定 (Responsive Design Media Queries)
+   ========================================================================= */
+@media (max-width: 900px) {
+    /* 1. 外層容器改為垂直排列 */
+    .main-layout {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+    
+    header { 
+        padding: 0 20px; 
+    }
+    
+    /* 2. 右側規則說明面板寬度自適應 */
+    .rules-sidebar {
+        width: 100%;
+        max-width: 400px; /* 寬度與您的單字卡保持一致 */
+    }
+
+    /* 3. 💥 核心修正：取消原本控制按鈕外層的固定寬度、高度與邊框 */
+    .true-false {
+        width: 400px;        /* 寬度強制與卡片一致 */
+        height: auto;        /* 高度改為自動，由內部按鈕撐開 */
+        background-color: transparent; /* 移除白底，呈現俐落感 */
+        box-shadow: none;    /* 移除外層陰影 */
+        border: none;        /* 移除外層邊框 */
+        display: flex;
+        flex-direction: column; /* 💡 核心：將按鈕改為由上至下垂直排列 */
+        gap: 12px;           /* 按鈕與按鈕之間的垂直間距 */
+        top: 0;              /* 重設偏移量 */
+    }
+
+    /* 4. 💥 核心修正：讓內層按鈕寬度 100% 滿版，全面與卡片等長 */
+    .true-false > button {
+        width: 100%;         /* 💡 核心：寬度拉長為 100%，與卡片一樣長 */
+        height: 54px;        /* 微調手機版高度，更方便手指大面積點擊 */
+        margin: 0;           /* 清除原本的左右 margin 擠壓 */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 將陰影移至按鈕本體，質感更立體 */
+    }
 }
