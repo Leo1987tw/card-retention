@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 date_default_timezone_set("Asia/Taipei");
 
-$config = require __DIR__ . "/../../db_config/card/db_config.php";
+$config = require __DIR__ . "/../../db_config/card-retention/db_config.php";
 
 class DB
 {
