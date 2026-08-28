@@ -38,32 +38,55 @@ function getInitialFinishedCard() {
  * 核心 1：翻牌行為 (flipCard)
  */
 function flipCard(event) {
-    // 防誤觸：點擊到發音、按鈕或輸入框時，禁止翻牌
+    // 1. 防誤觸：點擊到發音、按鈕或輸入框時，禁止翻牌
     if (event.target.closest('#audio') || event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT') {
         return;
     }
 
-    // 如果畫面目前是「任務結束」的結算訊息盒，點擊不觸發翻轉動畫
-    if (document.querySelector('.finished-box')) {
+    // 2. 💡 修正特訓防線：只有在卡片「沒被重建」（即畫面上真的還顯示著 finished-box）時才阻擋
+    // 點擊特訓按鈕後，新卡片產生了，此時不應該被阻擋
+    const finishedBox = document.querySelector('.finished-box');
+    if (finishedBox) {
         alert("今日任務已達成！請點擊下方按鈕開始複習字庫。");
         return;
     }
 
-    card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-    const rectangle = card.getBoundingClientRect();
+    // 3. 💡 關鍵修正：每次點擊，即時獲取最新重建的 #card 節點
+    const currentCard = document.getElementById('card');
+    if (!currentCard) return;
+
+    // 將最新節點同步回全域變數，確保其他連動腳本不會出錯
+    window.card = currentCard;
+
+    // 4. 執行翻轉邏輯
+    currentCard.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+    const rectangle = currentCard.getBoundingClientRect();
     const clickPosition = event.clientX - rectangle.left - rectangle.width / 2;
 
-    if (clickPosition >= 0) { degree += 180; } else { degree -= 180; }
-    card.style.transform = `rotateY(${degree}deg)`;
+    if (clickPosition >= 0) { 
+        degree += 180; 
+    } else { 
+        degree -= 180; 
+    }
+    currentCard.style.transform = `rotateY(${degree}deg)`;
 }
 
-// 監聽翻牌動畫結束：精簡旋轉角度，避免數值無限疊加
-if (card) {
-    card.addEventListener('transitionend', () => {
-        card.style.transition = "none";
-        degree %= 360;
-        if (degree < 0) degree += 360;
-        card.style.transform = `rotateY(${degree}deg)`;
+// =========================================================================
+// 💡 關鍵修正：不要把 transitionend 綁在會被摧毀的 card 上！
+// 改綁在永遠不滅的父層容器 #card-board 上，一勞永逸！
+// =========================================================================
+const cardBoardContainer = document.getElementById('card-board');
+if (cardBoardContainer) {
+    cardBoardContainer.addEventListener('transitionend', (event) => {
+        // 確保引發動畫結束的是 #card 本身，而不是它裡面的其他元素
+        if (event.target.id === 'card') {
+            const currentCard = event.target;
+            currentCard.style.transition = "none";
+            
+            degree %= 360;
+            if (degree < 0) degree += 360;
+            currentCard.style.transform = `rotateY(${degree}deg)`;
+        }
     });
 }
 
@@ -166,6 +189,14 @@ function restoreCardLayoutIfFinished() {
         `;
         // 重新獲取剛生成的 card DOM 物件，確保全域變數可以正常對接動畫與旋轉
         window.card = document.getElementById('card');
+        
+        // 3. 💡 核心修正：強制重新綁定點擊翻轉事件，確保特訓完功能不遺失
+        // 如果原本的 flipCard 屬性消失了，這行能完美補救
+        cardBoard.onclick = function(event) {
+            if (typeof flipCard === 'function') {
+                flipCard(event);
+            }
+        };
     }
 }
 

@@ -48,17 +48,31 @@ if ($isLoggedIn && $learner_id > 0 && $id > 0 && $isCorrect !== null && $mode !=
     
     $record = $LearningRecord->find(['learner_id' => $learner_id, 'word_id' => $id, 'type' => $do]);
 
-    if ($isCorrect === 'true') {
-        if ($record) {
+    if (!$record) {
+        // =========================================================================
+        // ✨ 全新字初次見面防線：今天剛認識，不論點什麼，一律先留在 LV 1
+        // =========================================================================
+        $new_level = 1; 
+        $new_preview_count = 1;
+        $is_actual_wrong = false;       // 新字第一天不扣正確率
+        $is_new_word_graduation = true; // 標記為今日新學到的字（新字額度 +1）
+    } else {
+        // =========================================================================
+        // 舊單字複習邏輯：隔天以後再次見面，正式啟動間隔重複升降機制
+        // =========================================================================
+        $is_new_word_graduation = false;
+        
+        if ($isCorrect === 'true') {
+            // 舊字點認得：等級往上加（最高 LV 5）
             $new_level = min(5, intval($record['learning_level']) + 1); 
             $new_preview_count = intval($record['preview_count']) + 1;
+            $is_actual_wrong = false;
         } else {
-            $new_level = 2; 
-            $new_preview_count = 1;
+            // 舊字點不認得：打回原形降至 LV 1
+            $new_level = 1;
+            $new_preview_count = intval($record['preview_count']) + 1; 
+            $is_actual_wrong = true; // 真正的舊字複習答錯，會拉低正確率並影響新字額度
         }
-    } else {
-        $new_level = 1;
-        $new_preview_count = 1; 
     }
 
     switch ($new_level) {
