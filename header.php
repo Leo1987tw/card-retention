@@ -9,9 +9,11 @@
                 <a class="button" href="./index.php?do=css">css</a>
             </div>
         </div>
+        <h1>&nbsp;&nbsp;&nbsp;天&nbsp;天&nbsp;20</h1>
     </div>
 
     <div class="right">
+        <h1>Ten&nbsp;Ten&nbsp;20&nbsp;&nbsp;&nbsp;</h1>
         <?php
 
         if (!isset($_SESSION['username'])) {
