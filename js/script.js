@@ -272,15 +272,44 @@ function pronounce(event) {
     const wordText = document.getElementById('word').innerText.trim();
     if (!wordText || ['Fetch data fail.', 'Connection fail.', '載入中...'].includes(wordText)) return;
 
-    // 軌道 A：如果當前卡片帶有真實 mp3 網址，走最高品質真人語音播放
+    // 軌道 A：有真人音檔網址
     if (currentAudioUrl) {
+        let isTtsTriggered = false; // 標記是否已經啟動了 TTS，避免重複播放
         const audio = new Audio(currentAudioUrl);
-        audio.play().catch(err => {
-            console.warn("真人音檔播放失敗，自動轉為 TTS 備援發音:", err);
-            executeTTS(wordText); // 音檔失效或不支援時，無縫啟動防禦機器音
-        });
+
+        // 建立一個 0.1 秒（100ms）的定時器
+        const timeoutId = setTimeout(() => {
+            if (!isTtsTriggered) {
+                isTtsTriggered = true;
+                audio.src = ''; // 立即切斷並停止下載原本的音檔
+                audio.load();
+                console.warn("音檔載入超過 0.1 秒，強制切換至內建 TTS");
+                executeTTS(wordText);
+            }
+        }, 100); // 設為 100 毫秒
+
+        // 監聽音檔是否可以流暢播放（代表載入成功）
+        audio.addEventListener('canplaythrough', () => {
+            clearTimeout(timeoutId); // 成功載入，取消定時器
+            if (!isTtsTriggered) {
+                audio.play().catch(err => {
+                    console.warn("真人音檔播放失敗，轉為 TTS:", err);
+                    executeTTS(wordText);
+                });
+            }
+        }, { once: true }); // 使用 once: true 確保事件只觸發一次
+
+        // 防禦：如果音檔元件本身回報錯誤
+        audio.addEventListener('error', () => {
+            clearTimeout(timeoutId);
+            if (!isTtsTriggered) {
+                isTtsTriggered = true;
+                executeTTS(wordText);
+            }
+        }, { once: true });
+
     } else {
-        // 軌道 B：無音檔時（如 HTML/CSS 專業術語庫），直接走 TTS 發音
+        // 軌道 B：無音檔時，直接走 TTS 發音
         executeTTS(wordText);
     }
 }
