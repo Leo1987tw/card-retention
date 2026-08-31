@@ -1,4 +1,8 @@
 <?php
+// 開啟 Session，確保登入狀態與每日進度快取正常運作
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 include_once "./db.php"; 
 header('Content-Type: application/json; charset=utf-8');
@@ -104,21 +108,26 @@ if ($isLoggedIn && $learner_id > 0 && $id > 0 && $isCorrect !== null && $mode !=
 
     $LearningRecord->save($save_data);
 
-    if (isset($_SESSION['daily_progress']['sets'][$setKey])) {
-        if ($record) {
-            $_SESSION['daily_progress']['sets'][$setKey]['total'] += 1;
-            if ($isCorrect === 'false') {
-                $_SESSION['daily_progress']['sets'][$setKey]['wrong'] += 1;
-            }
-        } else {
-            $_SESSION['daily_progress']['sets'][$setKey]['new_word_count'] += 1;
-            $_SESSION['daily_progress']['sets'][$setKey]['pool_size'] += 1;
+    // 建立進度快取緩衝結構
+    if (!isset($_SESSION['daily_progress']['sets'][$setKey])) {
+        $_SESSION['daily_progress']['sets'][$setKey] = ['total'=>0, 'wrong'=>0, 'new_word_count'=>0, 'pool_size'=>0, 'is_finished'=>false];
+    }
+
+    // 💡 關鍵優化：只有在複習「舊單字（$record 存在）」時，才累計正確率分子分母，避免新字污染計算
+    if ($record) {
+        $_SESSION['daily_progress']['sets'][$setKey]['total'] += 1;
+        if ($isCorrect === 'false') {
+            $_SESSION['daily_progress']['sets'][$setKey]['wrong'] += 1;
         }
+    } else {
+        // 新字單純累計今日新字數
+        $_SESSION['daily_progress']['sets'][$setKey]['new_word_count'] += 1;
+        $_SESSION['daily_progress']['sets'][$setKey]['pool_size'] += 1;
     }
 }
 
 /* =========================================================================
-   第二部分：動態完工審查與下一張卡片抽取路由
+   第二部分：動態完工審查與下一張卡片抽取路由 (先舊後新核心)
    ========================================================================= */
 $word_data = null;
 $isFinishedSignal = false;
@@ -149,24 +158,43 @@ if (!$isLoggedIn) {
     /* ----- 【B. 已登入 / 會員模式】 ----- */
     $current_date = date('Y-m-d');
     
-    $progress   = $_SESSION['daily_progress']['sets'][$setKey] ?? ['total'=>0, 'wrong'=>0, 'new_word_count'=>0, 'pool_size'=>0, 'is_finished'=>false];
+    if (!isset($_SESSION['daily_progress']['sets'][$setKey])) {
+        $_SESSION['daily_progress']['sets'][$setKey] = ['total'=>0, 'wrong'=>0, 'new_word_count'=>0, 'pool_size'=>0, 'is_finished'=>false];
+    }
+
+    $progress   = $_SESSION['daily_progress']['sets'][$setKey];
     $total      = intval($progress['total']);
     $wrong      = intval($progress['wrong']);
     $new_count  = intval($progress['new_word_count']);
     $pool_size  = intval($progress['pool_size']);
 
-    $accuracy = ($total === 0) ? 100 : (($total - $wrong) / $total) * 100;
-    if ($accuracy >= 85)     $new_limit = 20;
-    elseif ($accuracy >= 70) $new_limit = 15;
-    elseif ($accuracy >= 60) $new_limit = 10;
-    elseif ($accuracy >= 50) $new_limit = 5;
-    else                     $new_limit = 0; 
-
+    // 1. 嚴格安全防線：先檢查今天是否還有「尚未複習完成」的到期舊字
     $due_where = "WHERE `learner_id` = '$learner_id' AND `type` = '$do' AND `next_review_date` <= '$current_date'";
     $has_due_words = ($LearningRecord->count($due_where) > 0);
 
-    $isTodayTaskDone = (!$has_due_words && ($new_count >= $new_limit || $pool_size >= 200));
+    // 2. 核心分流機制：判定今天是否完工
+    $isTodayTaskDone = false;
 
+    if ($has_due_words) {
+        // A 軌道：還有舊字需要處理！此時「不計算新字上限」，因為根本還不能加新字，防誤觸完工
+        $isTodayTaskDone = false;
+    } else {
+        // B 軌道：舊字已經完美清空！此時「正式結算今日舊字複習正確率」，動態決定今天的新字額度
+        $accuracy = ($total === 0) ? 100 : (($total - $wrong) / $total) * 100;
+        
+        if ($accuracy >= 85)     $new_limit = 20;
+        elseif ($accuracy >= 70) $new_limit = 15;
+        elseif ($accuracy >= 60) $new_limit = 10;
+        elseif ($accuracy >= 50) $new_limit = 5;
+        else                     $new_limit = 0; // 複習正確率太低，今天不給予新字，強制複習
+
+        // 檢查今天已學的新字是否達到剛結算出來的上限
+        if ($new_count >= $new_limit || $pool_size >= 200) {
+            $isTodayTaskDone = true;
+        }
+    }
+
+    // 儲存完工旗標與日期紀錄至資料庫
     if ($isTodayTaskDone && $_SESSION['daily_progress']['sets'][$setKey]['is_finished'] === false) {
         $_SESSION['daily_progress']['sets'][$setKey]['is_finished'] = true;
         $Learner->save(['id' => $learner_id, 'task_finished' => $current_date]);
@@ -175,7 +203,9 @@ if (!$isLoggedIn) {
     $updated_json = json_encode($_SESSION['daily_progress'], JSON_UNESCAPED_UNICODE);
     $Learner->save(['id' => $learner_id, 'daily_progress' => $updated_json]);
 
+    // 3. 下一張卡片正式抽取分流排程
     if ($_SESSION['daily_progress']['sets'][$setKey]['is_finished'] === true || $mode !== '') {
+        // 【完工特訓/盲刷模式】：舊字沒了、新字也滿了
         $isFinishedSignal = true;
 
         if ($mode === 'pool_hard') {
@@ -185,11 +215,14 @@ if (!$isLoggedIn) {
         }
         $word_data = !empty($res) ? $res[0] : null;
     } else {
+        // 【一般學習進行中模式】
         if ($has_due_words) {
+            // 優先堆：還有到期舊字，死死鎖定在舊字堆，一律不放行新字
             $res = $currentDB->q("SELECT lr.*, $sql_fields FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id $sql_join WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' AND lr.next_review_date <= '$current_date' ORDER BY RAND() LIMIT 1");
             $word_data = !empty($res) ? $res[0] : null;
         } else {
-            $res = $currentDB->q("SELECT $sql_fields FROM `$table` t $sql_join WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY RAND() LIMIT 1");
+            // 遞補堆：舊字全部消滅光了，這時才允許放行載入按順序排列的全新單字
+            $res = $currentDB->q("SELECT $sql_fields FROM `$table` t $sql_join WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY id ASC LIMIT 1");
             $word_data = !empty($res) ? $res[0] : null;
             
             if ($word_data) {
@@ -201,7 +234,7 @@ if (!$isLoggedIn) {
 }
 
 if (!$word_data) {
-    echo json_encode(["status" => "empty", "message" => "當前排堆已無任何可用卡片"], JSON_UNESCAPED_UNICODE);
+    echo json_encode(["status" => "empty", "message" => "當前排堆已無任何可用卡片，請確認字庫庫存是否充足。"], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -226,5 +259,4 @@ echo json_encode([
 ], JSON_UNESCAPED_UNICODE);
 
 exit;
-
 ?>
