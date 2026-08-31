@@ -24,7 +24,7 @@
     </div>
 
     <div class="true-false">
-        <button onclick="drawCard(correct, event)">答對了</button>
-        <button onclick="drawCard(wrong, event)">答錯了</button>
+        <button onclick="nextCard(true, event)">答對了</button>
+        <button onclick="nextCard(false, event)">答錯了</button>
     </div>
 </div>
