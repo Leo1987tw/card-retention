@@ -55,8 +55,8 @@ if (isset($_SESSION['daily_progress']['sets'][$setKey]['is_finished'])) {
         </div>
 
         <div class="true-false">
-            <button onclick="drawCard(correct, event)">我認得</button>
-            <button onclick="drawCard(wrong, event)">不認得</button>
+            <button onclick="drawCard('correct', event)">我認得</button>
+            <button onclick="drawCard('wrong', event)">不認得</button>
         </div>
     </div>
 
