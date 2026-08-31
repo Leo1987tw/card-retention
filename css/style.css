@@ -126,6 +126,10 @@ footer {
 /* =========================================================================
    4. 3D 卡牌機制與外觀 (3D Flashcard Animation & Styles)
    ========================================================================= */
+.card-board, .card, .card * {
+    cursor: pointer;
+}
+
 .card-board {
     perspective: 1000px; /* 大幅提升 3D 翻轉的立體縱深感 */
     width: 400px;
@@ -304,6 +308,7 @@ button#audio:hover {
     border: none;
     border-radius: 10px;
     transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 /* 認得與不認得按鈕莫蘭迪配色調教 */
