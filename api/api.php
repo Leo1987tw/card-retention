@@ -248,8 +248,8 @@ echo json_encode([
     "definition"    => $word_data[$col_def]      ?? "", 
     "translation"   => $word_data['translation'] ?? "",
     "audio"         => $word_data['audio_url']   ?? "", 
-    "level"         => ($mode === 'pool_rand' || $mode === 'pool_hard') ? null : ($word_data['learning_level'] ?? null),
-    "preview_count" => ($mode === 'pool_rand' || $mode === 'pool_hard') ? null : ($word_data['preview_count'] ?? null),
+    "level"         => ($mode === 'pool_rand') ? null : ($word_data['learning_level'] ?? null),
+    "preview_count" => ($mode === 'pool_rand') ? null : ($word_data['preview_count'] ?? null),
     "isFinished"    => $isFinishedSignal
 ], JSON_UNESCAPED_UNICODE);
 

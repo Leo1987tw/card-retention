@@ -11,10 +11,10 @@ window.onload = () => {
         // 情境 A：如果今天一登入就發現已經完工，立刻將按鈕渲染成特訓/盲刷樣式
         renderButtonFinishedStyle();
         // 完工狀態下同樣呼叫 null，代表「不要更新任何對錯進度，純粹抽第一張特訓字」
-        drawCard(null, null); 
+        drawCard(null, null);
     } else {
         // 情境 B：正常狀態下登入，同樣帶入 null，純粹「抽今天的第一張舊字庫卡片」
-        drawCard(null, null); 
+        drawCard(null, null);
     }
 }
 
@@ -41,10 +41,10 @@ function flipCard(event) {
     const clickPosition = event.clientX - rectangle.left - rectangle.width / 2;
 
     // 點擊卡片右半邊 ➔ 向右正翻 (+180度)；點擊左半邊 ➔ 向左逆翻 (-180度)
-    if (clickPosition >= 0) { 
-        degree += 180; 
-    } else { 
-        degree -= 180; 
+    if (clickPosition >= 0) {
+        degree += 180;
+    } else {
+        degree -= 180;
     }
     card.style.transform = `rotateY(${degree}deg)`;
 }
@@ -59,7 +59,7 @@ if (cardBoardContainer) {
         if (event.target.id === 'card') {
             const currentCard = event.target;
             currentCard.style.transition = "none"; // 暫時關閉動畫，防止無限累加角度
-            
+
             // 數學歸一：讓旋轉角度永遠保持在 0 ~ 360 度之間，防止數字過大造成翻轉卡頓
             degree %= 360;
             if (degree < 0) degree += 360;
@@ -80,8 +80,8 @@ function drawCard(action, event) {
 
     if (typeof isTaskFinished !== 'undefined' && isTaskFinished) {
         // 【完工特訓分支】
-        if (action === 'correct')      url += `&mode=pool_hard`;   // 點特訓生字
-        else if (action === 'wrong')   url += `&mode=pool_rand`;   // 點隨機盲刷
+        if (action === 'correct') url += `&mode=pool_hard`;   // 點特訓生字
+        else if (action === 'wrong') url += `&mode=pool_rand`;   // 點隨機盲刷
     } else {
         // 【一般學習分支】裡外完全一致，直接打包 &action=correct 或 wrong 傳給後端
         if (action !== null && currentId !== -1) {
@@ -98,7 +98,7 @@ function drawCard(action, event) {
                 if (data.isFinished && (typeof isTaskFinished === 'undefined' || !isTaskFinished)) {
                     isTaskFinished = true;
                     renderButtonFinishedStyle(); // 下方按鈕立刻質變變色
-                    
+
                     // 中央卡片舞台直接抹除，替換為精美的完工結算畫面
                     document.getElementById('card-board').innerHTML = `
                         <div class="finished-box">
@@ -118,13 +118,13 @@ function drawCard(action, event) {
                 // 處理卡片翻轉回正與填入資料的時間差
                 card = document.getElementById('card'); // 永遠撈取最新被生出來的卡片
                 const isBack = (degree % 360 === 180);  // 檢查當前卡片是不是背面朝上
-                
+
                 if (isBack && card) {
                     // 如果在背面（中文朝上），先播旋轉動畫翻回正面（總耗時 0.4 秒）
                     card.style.transition = "transform 0.4s ease-out";
                     degree = 0;
                     card.style.transform = `rotateY(${degree}deg)`;
-                    
+
                     // 💡 關鍵時間差優化：等待 200 毫秒（卡片剛好轉到 90 度垂直、眼睛看不到字時）
                     // 默默在背景啟動 fillCardContent 把新文字塞進去，翻回正面時就是新單字，完美防止穿幫！
                     setTimeout(() => { fillCardContent(data); }, 200);
@@ -189,33 +189,37 @@ function fillCardContent(data) {
         'word': data.word,
         'definition': data.definition,
         'translation': data.translation,
-        'category1': data.category1, 
-        'category2': data.category2  
+        'category1': data.category1,
+        'category2': data.category2
     };
 
     // 安全遍歷填充所有欄位文字
     Object.keys(elementMapping).forEach(id => {
         const element = document.getElementById(id);
-        if (element) element.innerText = elementMapping[id] || ''; 
+        if (element) element.innerText = elementMapping[id] || '';
     });
 
-    // 渲染上方等級數據
+    // 渲染上方等級數據：生字特訓會如實亮出數據，隨機盲刷收到 null 則乾淨呈現 '--'
     const levelSpan = document.getElementById('current-level');
     if (levelSpan) levelSpan.innerText = (data.level !== null && data.level !== undefined) ? data.level : '--';
 
+    // 渲染上方出現次數：生字特訓會如實亮出數據，隨機盲刷收到 null 則乾淨呈現 '--'
     const countSpan = document.getElementById('current-preview-count');
     if (countSpan) countSpan.innerText = (data.preview_count !== null && data.preview_count !== undefined) ? data.preview_count : '--';
 
     // =========================================================================
-    // 💡 終極 Bug 修正（動態注入防線）：徹底根治 discreet 亮 NEW 的靈異現象！
+    // 💡 終極 Bug 修正（動態注入防線）：徹底根治 discreet 亮 NEW 的問題！
     // =========================================================================
     const container = document.getElementById('card-new-container');
     if (container) {
-        // 只有在「正常學習模式」且「出現次數明確剛好為 1」的全新字，才允許當場長出 HTML 標籤
-        if (data.preview_count !== null && data.preview_count !== undefined && Number(data.preview_count) === 1) {
+        // 💡 黃金雙重前提鎖：必須同時滿足「今日任務尚未完工」且「歷史出現次數剛好為 1」的全新字，才動態注入標籤
+        if ((typeof isTaskFinished === 'undefined' || !isTaskFinished) && 
+            data.preview_count !== null && data.preview_count !== undefined && Number(data.preview_count) === 1) {
+            
             container.innerHTML = '<div class="new">NEW</div>';
         } else {
-            container.innerHTML = ''; // 舊字複習、特訓模式、盲刷模式一律清空，物理上消滅 NEW！
+            // 舊字複習、生字特訓 (pool_hard)、隨機盲刷 (pool_rand) 一律清空，物理上消滅 NEW！
+            container.innerHTML = ''; 
         }
     }
 }
@@ -246,7 +250,7 @@ function pronounce(event) {
 
     if (currentAudioUrl) {
         // 【軌道 A：資料庫裡有配真人音檔網址】
-        let isTtsTriggered = false; 
+        let isTtsTriggered = false;
         const audio = new Audio(currentAudioUrl);
 
         // 建立一個 400 毫秒的緩衝防禦定時器
@@ -256,13 +260,13 @@ function pronounce(event) {
                 audio.src = ''; audio.load(); // 立即掐斷原音檔的網路請求
                 executeTTS(wordText); // 強制降級使用內建 TTS 發音
             }
-        }, 400); 
+        }, 400);
 
         // 監聽：如果在 400 毫秒內音檔能流暢播放，取消定時器，播放真人配音
         audio.addEventListener('canplaythrough', () => {
-            clearTimeout(timeoutId); 
+            clearTimeout(timeoutId);
             if (!isTtsTriggered) { audio.play().catch(err => { executeTTS(wordText); }); }
-        }, { once: true }); 
+        }, { once: true });
 
         // 防禦：如果音檔元件回報檔案毀損 (HTTP 404 等)，直接秒切 TTS 備援
         audio.addEventListener('error', () => {
