@@ -1,88 +1,66 @@
-const card = document.getElementById('card');
-let degree = 0;
-let currentId = -1;
-let currentAudioUrl = ""; // 💡 全新配置：儲存當前卡片從資料庫撈出的真人音檔網址
+// ==================== 1. 全域變數宣告 ====================
+let card = document.getElementById('card'); // 動態捕捉中央 3D 卡片 DOM 節點
+let degree = 0;        // 記錄卡片目前的 3D 旋轉角度（0度正面、180度背面）
+let currentId = -1;    // 儲存目前畫面上這張單字的資料庫流水號 (ID)，回報進度時必帶
+let currentAudioUrl = ""; // 儲存當前單字的真人 MP3 發音網址
 
-// 頁面載入時自動初始化第一張卡片
+// 💡 頁面載入時自動初始化第一張卡片
 window.onload = () => {
-    if (isTaskFinished) {
-        // 1. 如果今天已經完成任務，一登入立刻把按鈕渲染完畢（完全不閃爍）
+    // isTaskFinished 是由後端 PHP 渲染在 HTML 全域的變數，代表今天是否已完工
+    if (typeof isTaskFinished !== 'undefined' && isTaskFinished) {
+        // 情境 A：如果今天一登入就發現已經完工，立刻將按鈕渲染成特訓/盲刷樣式
         renderButtonFinishedStyle();
-        // 2. 完工狀態下，第一次進入直接去撈取 200 字庫內完全隨機的卡片，供後續翻牌
-        getInitialFinishedCard();
+        // 完工狀態下同樣呼叫 null，代表「不要更新任何對錯進度，純粹抽第一張特訓字」
+        drawCard(null, null); 
     } else {
-        // 正常狀態：抓取今天的第一張普通卡片
-        nextCard(null, null);
+        // 情境 B：正常狀態下登入，同樣帶入 null，純粹「抽今天的第一張舊字庫卡片」
+        drawCard(null, null); 
     }
 }
 
-/**
- * 特殊輔助：任務完成後重新登入，初次靜默加載字庫單字
- */
-function getInitialFinishedCard() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentDo = urlParams.get('do') || 'main'; // 預設對接單一入口路由
-
-    fetch(`./api/api.php?do=${encodeURIComponent(currentDo)}&mode=pool_rand`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                currentId = data.id;
-                currentAudioUrl = data.audio || ""; // 緩存發音網址
-            }
-        })
-        .catch(error => console.error('初始字庫載入失敗: ', error));
-}
-
-/**
- * 核心 1：翻牌行為 (flipCard)
- */
+// ==================== 2. 核心 1：手動翻牌行為 (flipCard) ====================
 function flipCard(event) {
-    // 1. 防誤觸：點擊到發音、按鈕或輸入框時，禁止翻牌
+    // 1. 防誤觸防線：如果點到的是發音按鈕、按鍵或輸入框，絕對禁止卡片翻轉
     if (event.target.closest('#audio') || event.target.tagName === 'BUTTON' || event.target.tagName === 'INPUT') {
         return;
     }
 
-    // 2. 💡 修正特訓防線：只有在卡片「沒被重建」（即畫面上真的還顯示著 finished-box）時才阻擋
-    // 點擊特訓按鈕後，新卡片產生了，此時不應該被阻擋
+    // 2. 完工防線：如果完工祝賀畫面（finished-box）還在，阻擋翻牌並提示
     const finishedBox = document.querySelector('.finished-box');
     if (finishedBox) {
         alert("今日任務已達成！請點擊下方按鈕開始複習字庫。");
         return;
     }
 
-    // 3. 💡 關鍵修正：每次點擊，即時獲取最新重建的 #card 節點
-    const currentCard = document.getElementById('card');
-    if (!currentCard) return;
+    card = document.getElementById('card');
+    if (!card) return;
 
-    // 將最新節點同步回全域變數，確保其他連動腳本不會出錯
-    window.card = currentCard;
-
-    // 4. 執行翻轉邏輯
-    currentCard.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-    const rectangle = currentCard.getBoundingClientRect();
+    // 3. 智慧方向翻轉演算法
+    card.style.transition = "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+    const rectangle = card.getBoundingClientRect();
     const clickPosition = event.clientX - rectangle.left - rectangle.width / 2;
 
+    // 點擊卡片右半邊 ➔ 向右正翻 (+180度)；點擊左半邊 ➔ 向左逆翻 (-180度)
     if (clickPosition >= 0) { 
         degree += 180; 
     } else { 
         degree -= 180; 
     }
-    currentCard.style.transform = `rotateY(${degree}deg)`;
+    card.style.transform = `rotateY(${degree}deg)`;
 }
 
 // =========================================================================
-// 💡 關鍵修正：不要把 transitionend 綁在會被摧毀的 card 上！
-// 改綁在永遠不滅的父層容器 #card-board 上，一勞永逸！
+// 💡 父監聽器防線：改綁在「永遠不會被摧毀」的父層容器 #card-board 上！
 // =========================================================================
 const cardBoardContainer = document.getElementById('card-board');
 if (cardBoardContainer) {
     cardBoardContainer.addEventListener('transitionend', (event) => {
-        // 確保引發動畫結束的是 #card 本身，而不是它裡面的其他元素
+        // 確保引發動畫結束的是 #card 本身，而不是裡面的小元件
         if (event.target.id === 'card') {
             const currentCard = event.target;
-            currentCard.style.transition = "none";
+            currentCard.style.transition = "none"; // 暫時關閉動畫，防止無限累加角度
             
+            // 數學歸一：讓旋轉角度永遠保持在 0 ~ 360 度之間，防止數字過大造成翻轉卡頓
             degree %= 360;
             if (degree < 0) degree += 360;
             currentCard.style.transform = `rotateY(${degree}deg)`;
@@ -90,27 +68,24 @@ if (cardBoardContainer) {
     });
 }
 
-/**
- * 核心 2：抽下一張牌 (nextCard)
- */
-function nextCard(isCorrect, event) {
-    if (event) event.stopPropagation();
+// ==================== 3. 核心 2：抽下一張牌 (drawCard) ====================
+// 💡 裡外徹底一體化：action 可以傳 'correct'（記得）、'wrong'（不記得）或 null（純抽卡）
+function drawCard(action, event) {
+    if (event) event.stopPropagation(); // 防止點擊答題按鈕時順便把卡片翻面
 
     const urlParams = new URLSearchParams(window.location.search);
-    const currentDo = urlParams.get('do') || 'main';
+    const currentDo = urlParams.get('do') || 'main'; // 動態取得排堆主題
 
     let url = `./api/api.php?do=${encodeURIComponent(currentDo)}`;
 
-    // 如果今天任務已經完成了，按鈕功能全面質變
-    if (isTaskFinished) {
-        if (isCorrect === true) {
-            url += `&mode=pool_hard`;   // 點擊特訓 ➔ 200 字庫內的最低 LV 生字
-        } else if (isCorrect === false) {
-            url += `&mode=pool_rand`;   // 點擊盲刷 ➔ 200 字庫內完全隨機，不紀錄
-        }
+    if (typeof isTaskFinished !== 'undefined' && isTaskFinished) {
+        // 【完工特訓分支】
+        if (action === 'correct')      url += `&mode=pool_hard`;   // 點特訓生字
+        else if (action === 'wrong')   url += `&mode=pool_rand`;   // 點隨機盲刷
     } else {
-        if (isCorrect !== null && currentId !== -1) {
-            url += `&id=${currentId}&isCorrect=${isCorrect ? 'true' : 'false'}`;
+        // 【一般學習分支】裡外完全一致，直接打包 &action=correct 或 wrong 傳給後端
+        if (action !== null && currentId !== -1) {
+            url += `&id=${currentId}&action=${action}`;
         }
     }
 
@@ -119,12 +94,12 @@ function nextCard(isCorrect, event) {
         .then(data => {
             if (data.status === 'success') {
 
-                // 情境：一般學習過程中，「作答的當下」剛好清空舊字並觸發完工
-                if (data.isFinished && !isTaskFinished) {
+                // 情境：如果您「作答的當下」剛好清空舊字、學滿新字，觸發當下完工結算
+                if (data.isFinished && (typeof isTaskFinished === 'undefined' || !isTaskFinished)) {
                     isTaskFinished = true;
-                    renderButtonFinishedStyle(); // 渲染按鈕質變樣式
-
-                    // 動態將卡牌區塊替換為完工結算畫面
+                    renderButtonFinishedStyle(); // 下方按鈕立刻質變變色
+                    
+                    // 中央卡片舞台直接抹除，替換為精美的完工結算畫面
                     document.getElementById('card-board').innerHTML = `
                         <div class="finished-box">
                             <h1 style="font-size: 4rem; margin-bottom: 20px;">🎉</h1>
@@ -137,16 +112,24 @@ function nextCard(isCorrect, event) {
                     return;
                 }
 
-                // 情境：如果是「完工後連續點擊按鈕複習字庫」，將卡牌結構復原
+                // 情境：如果是完工特訓狀態下連續點擊，自動將「祝賀文字」還原回「3D卡片結構」
                 restoreCardLayoutIfFinished();
 
-                const isBack = (degree % 360 === 180);
-                if (isBack) {
-                    card.style.transition = "transform 0.5s ease-out";
+                // 處理卡片翻轉回正與填入資料的時間差
+                card = document.getElementById('card'); // 永遠撈取最新被生出來的卡片
+                const isBack = (degree % 360 === 180);  // 檢查當前卡片是不是背面朝上
+                
+                if (isBack && card) {
+                    // 如果在背面（中文朝上），先播旋轉動畫翻回正面（總耗時 0.4 秒）
+                    card.style.transition = "transform 0.4s ease-out";
                     degree = 0;
                     card.style.transform = `rotateY(${degree}deg)`;
+                    
+                    // 💡 關鍵時間差優化：等待 200 毫秒（卡片剛好轉到 90 度垂直、眼睛看不到字時）
+                    // 默默在背景啟動 fillCardContent 把新文字塞進去，翻回正面時就是新單字，完美防止穿幫！
                     setTimeout(() => { fillCardContent(data); }, 200);
                 } else {
+                    // 如果本來就在正面，直接重新填入資料、無感知刷新
                     fillCardContent(data);
                 }
             } else {
@@ -154,175 +137,153 @@ function nextCard(isCorrect, event) {
                 if (wordNode) wordNode.innerText = 'Fetch data fail.';
             }
         })
-        .catch(error => {
-            console.error('Error: ', error);
-        });
+        .catch(error => console.error('Error: ', error));
 }
 
+// ==================== 4. 全功能輔助工具箱 ====================
+
 /**
- * 輔助 1：當點擊特訓/盲刷時，將「任務結束」文字替換回「卡牌 3D 結構」
+ * 輔助 1：當點擊特訓時，將「完工祝賀文字」無縫復原回「卡牌 3D 結構」
  */
 function restoreCardLayoutIfFinished() {
-    const finishedBox = document.querySelector('.finished-box');
-    if (finishedBox) {
-        document.getElementById('card-board').innerHTML = `
-            <div class="card" id="card">
-                <div class="face front">
-                    <div class="new">NEW</div>
-                    <div class="learning-statement">
-                        <span class="learning-level">記憶等級 LV <span id="current-level">--</span></span>
-                        <span class="preview-count">此卡牌出現過 <span id="current-preview-count">--</span> 次</span>
-                    </div>
-                    <p class="word" id="word">載入中...</p>
-                    <div style="position: absolute; bottom: 80px; display: flex; justify-content: center; align-items: center;">
-                        <!-- 💡 核心修正：動態重建的結構也同步更名為簡潔的 category1 與 category2 ID -->
-                        <p class="category1" id="category1">--</p>
-                        <p class="category2" id="category2">--</p>
-                        <button class="audio" id="audio" onclick="pronounce(event)">發音</button>
-                    </div>
+    const cardBoard = document.getElementById('card-board');
+    if (!cardBoard || document.getElementById('card')) return; // 如果已經是卡片結構，直接跳過
+
+    // 重新用 innerHTML 把卡片結構長回來
+    cardBoard.innerHTML = `
+        <div class="card" id="card">
+            <div class="face front">
+                <!-- 💡 終極 Bug 修正（物理閹割法）：這裡徹底刪除原先寫死的 NEW 標籤 HTML！ -->
+                <!-- 預設改放一個空容器，複習或特訓模式下這裡在物理上根本沒有 NEW，絕對 100% 拆除殘留！ -->
+                <div id="card-new-container"></div> 
+                <div class="learning-statement">
+                    <span class="learning-level">記憶等級 LV <span id="current-level">--</span></span>
+                    <span class="preview-count">此卡牌出現過 <span id="current-preview-count">--</span> 次</span>
                 </div>
-                <div class="face back">
-                    <p class="translation" id="translation">中文翻譯</p>
-                    <p class="definition" id="definition">english definition</p>
+                <p class="word" id="word">載入中...</p>
+                <div style="position: absolute; bottom: 80px; display: flex; justify-content: center; align-items: center;">
+                    <p class="category1" id="category1">--</p>
+                    <p class="category2" id="category2">--</p>
+                    <button class="audio" id="audio" onclick="pronounce(event)">發音</button>
                 </div>
             </div>
-        `;
-        // 重新獲取剛生成的 card DOM 物件，確保全域變數可以正常對接動畫與旋轉
-        window.card = document.getElementById('card');
-        
-        // 3. 💡 核心修正：強制重新綁定點擊翻轉事件，確保特訓完功能不遺失
-        // 如果原本的 flipCard 屬性消失了，這行能完美補救
-        cardBoard.onclick = function(event) {
-            if (typeof flipCard === 'function') {
-                flipCard(event);
-            }
-        };
-    }
+            <div class="face back">
+                <p class="translation" id="translation">中文翻譯</p>
+                <p class="definition" id="definition">english definition</p>
+            </div>
+        </div>
+    `;
+    card = document.getElementById('card'); // 重新將全域變數指派給最新長出來的節點
+    cardBoard.onclick = (e) => { if (typeof flipCard === 'function') flipCard(e); }; // 補綁點擊翻翻事件
 }
 
 /**
- * 輔助 2：資料填入功能 (fillCardContent)
- * 💡 極致優化：因為 HTML ID 與後端通道 100% 同名，直接進行一對一「乾淨映射」，省去所有 switch/if 判斷分流！
+ * 輔助 2：資料自動盲填填充功能 (fillCardContent)
  */
 function fillCardContent(data) {
     currentId = data.id;
-    currentAudioUrl = data.audio || ""; // 智慧通道：每次更換卡片，即更新真人發音網址
+    currentAudioUrl = data.audio || ""; // 智慧通道：更換卡片時更新真人音檔網址
 
-    // 建立萬用欄位盲填對照映射表
+    // 建立一對一「乾淨映射表」：HTML ID 與後端 JSON 100% 同名，直接用迴圈盲填
     const elementMapping = {
         'word': data.word,
         'definition': data.definition,
         'translation': data.translation,
-        'category1': data.category1, // 後端主分類數據 ➔ 填入 id="category1" 的 HTML
-        'category2': data.category2  // 後端次分類數據 ➔ 填入 id="category2" 的 HTML
+        'category1': data.category1, 
+        'category2': data.category2  
     };
 
-    // 安全遍歷渲染所有對應欄位
+    // 安全遍歷填充所有欄位文字
     Object.keys(elementMapping).forEach(id => {
         const element = document.getElementById(id);
-        if (element) { 
-            element.innerText = elementMapping[id] || ''; 
-        }
+        if (element) element.innerText = elementMapping[id] || ''; 
     });
 
-    // 【指標數據欄位渲染】
+    // 渲染上方等級數據
     const levelSpan = document.getElementById('current-level');
-    if (levelSpan) {
-        levelSpan.innerText = (data.level !== null && data.level !== undefined) ? data.level : '--';
-    }
+    if (levelSpan) levelSpan.innerText = (data.level !== null && data.level !== undefined) ? data.level : '--';
 
     const countSpan = document.getElementById('current-preview-count');
-    if (countSpan) {
-        countSpan.innerText = (data.preview_count !== null && data.preview_count !== undefined) ? data.preview_count : '--';
-    }
+    if (countSpan) countSpan.innerText = (data.preview_count !== null && data.preview_count !== undefined) ? data.preview_count : '--';
 
-    // 控制 NEW 標籤是否顯示
-    const newTag = document.querySelector('.new');
-    if (newTag) {
-        newTag.style.display = (Number(data.preview_count) === 1) ? 'block' : 'none';
+    // =========================================================================
+    // 💡 終極 Bug 修正（動態注入防線）：徹底根治 discreet 亮 NEW 的靈異現象！
+    // =========================================================================
+    const container = document.getElementById('card-new-container');
+    if (container) {
+        // 只有在「正常學習模式」且「出現次數明確剛好為 1」的全新字，才允許當場長出 HTML 標籤
+        if (data.preview_count !== null && data.preview_count !== undefined && Number(data.preview_count) === 1) {
+            container.innerHTML = '<div class="new">NEW</div>';
+        } else {
+            container.innerHTML = ''; // 舊字複習、特訓模式、盲刷模式一律清空，物理上消滅 NEW！
+        }
     }
 }
 
 /**
- * 輔助 3：今日完成後的按鈕渲染與質變樣式
+ * 輔助 3：今日完成後的按鈕樣式渲染與質變
  */
 function renderButtonFinishedStyle() {
     const btnGroup = document.querySelectorAll('.true-false button');
     if (btnGroup.length >= 2) {
-        const correctBtn = btnGroup[0]; // 答對了 按鈕
-        const wrongBtn = btnGroup[1];   // 答錯了 按鈕
+        btnGroup[0].innerText = "🎯 字庫生字特訓";
+        btnGroup[0].style.backgroundColor = "#2a9d8f";
+        btnGroup[0].style.color = "#ffffff";
 
-        correctBtn.innerText = "🎯 字庫生字特訓";
-        correctBtn.style.backgroundColor = "#2a9d8f";
-        correctBtn.style.color = "#ffffff";
-        correctBtn.title = "鎖定在您已建立的200字庫中，專門抽取低等級生字強化複習！";
-
-        wrongBtn.innerText = "🎲 字庫隨機盲刷";
-        wrongBtn.style.backgroundColor = "#e76f51";
-        wrongBtn.style.color = "#ffffff";
-        wrongBtn.title = "從200字庫中完全隨機抽選，且此模式點擊對錯不會記錄、不扣分！";
+        btnGroup[1].innerText = "🎲 字庫隨機盲刷";
+        btnGroup[1].style.backgroundColor = "#e76f51";
+        btnGroup[1].style.color = "#ffffff";
     }
 }
 
 /**
- * 輔助 4：語音發音 (pronounce) - 真人音檔優先與原生機器音備援雙軌切換
+ * 輔助 4：語音發音 (pronounce) - 真人音檔優先與原生 TTS 機器音雙軌切換備援
  */
 function pronounce(event) {
-    if (event) event.stopPropagation();
+    if (event) event.stopPropagation(); // 防止點發音按鈕時不小心把卡片翻面
     const wordText = document.getElementById('word').innerText.trim();
     if (!wordText || ['Fetch data fail.', 'Connection fail.', '載入中...'].includes(wordText)) return;
 
-    // 軌道 A：有真人音檔網址
     if (currentAudioUrl) {
-        let isTtsTriggered = false; // 標記是否已經啟動了 TTS，避免重複播放
+        // 【軌道 A：資料庫裡有配真人音檔網址】
+        let isTtsTriggered = false; 
         const audio = new Audio(currentAudioUrl);
 
-        // 建立一個 0.1 秒（100ms）的定時器
+        // 建立一個 400 毫秒的緩衝防禦定時器
         const timeoutId = setTimeout(() => {
             if (!isTtsTriggered) {
                 isTtsTriggered = true;
-                audio.src = ''; // 立即切斷並停止下載原本的音檔
-                audio.load();
-                console.warn("音檔載入超過 0.1 秒，強制切換至內建 TTS");
-                executeTTS(wordText);
+                audio.src = ''; audio.load(); // 立即掐斷原音檔的網路請求
+                executeTTS(wordText); // 強制降級使用內建 TTS 發音
             }
-        }, 100); // 設為 100 毫秒
+        }, 400); 
 
-        // 監聽音檔是否可以流暢播放（代表載入成功）
+        // 監聽：如果在 400 毫秒內音檔能流暢播放，取消定時器，播放真人配音
         audio.addEventListener('canplaythrough', () => {
-            clearTimeout(timeoutId); // 成功載入，取消定時器
-            if (!isTtsTriggered) {
-                audio.play().catch(err => {
-                    console.warn("真人音檔播放失敗，轉為 TTS:", err);
-                    executeTTS(wordText);
-                });
-            }
-        }, { once: true }); // 使用 once: true 確保事件只觸發一次
+            clearTimeout(timeoutId); 
+            if (!isTtsTriggered) { audio.play().catch(err => { executeTTS(wordText); }); }
+        }, { once: true }); 
 
-        // 防禦：如果音檔元件本身回報錯誤
+        // 防禦：如果音檔元件回報檔案毀損 (HTTP 404 等)，直接秒切 TTS 備援
         audio.addEventListener('error', () => {
             clearTimeout(timeoutId);
-            if (!isTtsTriggered) {
-                isTtsTriggered = true;
-                executeTTS(wordText);
-            }
+            if (!isTtsTriggered) { isTtsTriggered = true; executeTTS(wordText); }
         }, { once: true });
-
     } else {
-        // 軌道 B：無音檔時，直接走 TTS 發音
+        // 【軌道 B：無音檔時，直接走 TTS 原生發音】
         executeTTS(wordText);
     }
 }
 
 /**
- * 原生網頁 TTS 發音引擎封裝
+ * 輔助 5：原生網頁 TTS 發音引擎封裝
  */
 function executeTTS(text) {
     if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // 停止先前的聲音，防止連點時語音嚴重延遲堆疊
+        window.speechSynthesis.cancel(); // 💡 關鍵優化：連點發音時，立刻掐斷前一次聲音，防止語音堆疊嚴重延遲！
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
-        utterance.rate = 0.9;
+        utterance.rate = 0.9; // 語速稍微放慢 10%，英文發音更清晰
         window.speechSynthesis.speak(utterance);
     }
 }

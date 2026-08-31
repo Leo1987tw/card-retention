@@ -47,7 +47,7 @@ if ($is_admin) {
 }
 ?>
 
-<div class="container" style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
+<div class="container" style="max-width: 1200px; margin: 30px auto; padding: 0 20px; font-family: system-ui, -apple-system, sans-serif;">
 
     <h2 style="color: #2c3e50; margin-bottom: 25px; font-weight: 700; border-left: 5px solid #2a9d8f; padding-left: 15px;">
         ⚙️ <?php echo $is_admin ? '系統核心控制台 (Dashboard)' : '🎯 我的學習戰績儀表板'; ?>
@@ -58,17 +58,16 @@ if ($is_admin) {
        ========================================================================= -->
     <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; flex-wrap: wrap;">
         <!-- 💡 所有人都能看個人戰績 -->
-        <a href="./index.php?do=console&tab=my_stats" class="button" style="width: auto; padding: 0 20px; background-color: <?php echo $tab === 'my_stats' ? '#2a9d8f' : '#7f8c8d'; ?>">🏆 我的個人戰績</a>
+        <a href="./index.php?do=console&tab=my_stats" class="button" style="text-decoration: none; display: inline-block; text-align: center; height: 40px; line-height: 40px; border-radius: 5px; color: #fff; width: auto; padding: 0 20px; background-color: <?php echo $tab === 'my_stats' ? '#2a9d8f' : '#7f8c8d'; ?>">🏆 我的個人戰績</a>
 
         <?php if ($is_admin): ?>
             <!-- 💡 只有管理員才看得到的後台管理標籤 -->
-            <a href="./index.php?do=console&tab=words" class="button" style="width: auto; padding: 0 20px; background-color: <?php echo $tab === 'words' ? '#2a9d8f' : '#7f8c8d'; ?>">🔤 英文庫庫存</a>
-            <a href="./index.php?do=console&tab=html" class="button" style="width: auto; padding: 0 20px; background-color: <?php echo $tab === 'html' ? '#2a9d8f' : '#7f8c8d'; ?>">🌐 HTML 術語庫</a>
-            <a href="./index.php?do=console&tab=css" class="button" style="width: auto; padding: 0 20px; background-color: <?php echo $tab === 'css' ? '#2a9d8f' : '#7f8c8d'; ?>">🎨 CSS 術語庫</a>
-            <a href="./index.php?do=console&tab=learners" class="button" style="width: auto; padding: 0 20px; background-color: <?php echo $tab === 'learners' ? '#2a9d8f' : '#7f8c8d'; ?>">👥 學員進度總表</a>
+            <a href="./index.php?do=console&tab=words" class="button" style="text-decoration: none; display: inline-block; text-align: center; height: 40px; line-height: 40px; border-radius: 5px; color: #fff; width: auto; padding: 0 20px; background-color: <?php echo $tab === 'words' ? '#2a9d8f' : '#7f8c8d'; ?>">🔤 英文庫庫存</a>
+            <a href="./index.php?do=console&tab=html" class="button" style="text-decoration: none; display: inline-block; text-align: center; height: 40px; line-height: 40px; border-radius: 5px; color: #fff; width: auto; padding: 0 20px; background-color: <?php echo $tab === 'html' ? '#2a9d8f' : '#7f8c8d'; ?>">🌐 HTML 術語庫</a>
+            <a href="./index.php?do=console&tab=css" class="button" style="text-decoration: none; display: inline-block; text-align: center; height: 40px; line-height: 40px; border-radius: 5px; color: #fff; width: auto; padding: 0 20px; background-color: <?php echo $tab === 'css' ? '#2a9d8f' : '#7f8c8d'; ?>">🎨 CSS 術語庫</a>
+            <a href="./index.php?do=console&tab=learners" class="button" style="text-decoration: none; display: inline-block; text-align: center; height: 40px; line-height: 40px; border-radius: 5px; color: #fff; width: auto; padding: 0 20px; background-color: <?php echo $tab === 'learners' ? '#2a9d8f' : '#7f8c8d'; ?>">👥 學員進度總表</a>
         <?php endif; ?>
     </div>
-
     <!-- =========================================================================
        【情境 A：個人戰績看板模式 (my_stats)】
        ========================================================================= -->
@@ -84,20 +83,34 @@ if ($is_admin) {
             // 迴圈自動拆解三個字庫的 JSON 數據
             $set_names = ['words' => '🔤 基礎英文單字庫', 'html' => '🌐 HTML 專業術語庫', 'css' => '🎨 CSS 佈局術語庫'];
             foreach ($set_names as $key => $title):
+                // 💡 安全防禦：採用 Null 聯合運算子，確保即便是全新快取數據也不會跳出 Undefined key 警告
                 $data = $user_progress['sets'][$key] ?? ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false];
-                $total = intval($data['total']);
-                $wrong = intval($data['wrong']);
+                $total = intval($data['total'] ?? 0);
+                $wrong = intval($data['wrong'] ?? 0);
+                $new_count = intval($data['new_word_count'] ?? 0);
+                $is_finished = !empty($data['is_finished']);
                 $correct = $total - $wrong;
 
-                // 計算即時答對率
-                $accuracy = ($total === 0) ? 0 : round(($correct / $total) * 100, 1);
+                // 1. 精準複習正確率計算（與最新版 action 語意完美接軌）
+                $accuracy = ($total === 0) ? 100 : round(($correct / $total) * 100, 1);
 
-                // 智慧動態進度條（以今日任務 20 字為基準計算）
-                $progress_percent = min(100, ($total > 0) ? round(($total / 20) * 100) : 0);
+                // 2. 💡 核心修正：逆向精準推算學員今日的「動態新字上限」
+                if ($accuracy >= 85)     $dynamic_limit = 20;
+                elseif ($accuracy >= 70) $dynamic_limit = 15;
+                elseif ($accuracy >= 60) $dynamic_limit = 10;
+                elseif ($accuracy >= 50) $dynamic_limit = 5;
+                else                     $dynamic_limit = 0;
+
+                // 3. 💡 核心修正：以「今日實際新字上限」作為分母計算新字進度條，完工直接 100% 灌滿，防止數據失真
+                if ($is_finished) {
+                    $progress_percent = 100;
+                } else {
+                    $progress_percent = ($dynamic_limit === 0) ? 0 : min(100, round(($new_count / $dynamic_limit) * 100));
+                }
             ?>
                 <div style="background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); padding: 25px; border: 1px solid #edf2f7; position: relative; overflow: hidden;">
                     <!-- 完工狀態標籤 -->
-                    <?php if (!empty($data['is_finished'])): ?>
+                    <?php if ($is_finished): ?>
                         <div style="position: absolute; top: 15px; right: 15px; background: #e6f7f4; color: #2a9d8f; font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 6px;">🎉 今日完工</div>
                     <?php else: ?>
                         <div style="position: absolute; top: 15px; right: 15px; background: #fff0f2; color: #e74c3c; font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 6px;">⚡ 奮戰中</div>
@@ -108,22 +121,22 @@ if ($is_admin) {
                     <!-- 數據看板數字 -->
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 10px; margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: 10px;">
                         <div>
-                            <span style="display: block; font-size: 0.8rem; color: #64748b;">今日刷題</span>
+                            <span style="display: block; font-size: 0.8rem; color: #64748b;">今日複習</span>
                             <strong style="font-size: 1.3rem; color: #2c3e50;"><?php echo $total; ?></strong>
                         </div>
                         <div>
-                            <span style="display: block; font-size: 0.8rem; color: #64748b;">答對率</span>
-                            <strong style="font-size: 1.3rem; color: #2a9d8f;"><?php echo $accuracy; ?>%</strong>
+                            <span style="display: block; font-size: 0.8rem; color: #64748b;">複習正確率</span>
+                            <strong style="font-size: 1.3rem; color: <?php echo $accuracy >= 70 ? '#2a9d8f' : '#e76f51'; ?>;"><?php echo $accuracy; ?>%</strong>
                         </div>
                         <div>
-                            <span style="display: block; font-size: 0.8rem; color: #64748b;">解鎖新字</span>
-                            <strong style="font-size: 1.3rem; color: #3b82f6;"><?php echo $data['new_word_count'] ?? 0; ?></strong>
+                            <span style="display: block; font-size: 0.8rem; color: #64748b;">今日新字</span>
+                            <strong style="font-size: 1.3rem; color: #3b82f6;"><?php echo $new_count; ?><span style="font-size: 0.8rem; color: #94a3b8; font-weight: normal;"> / <?php echo $dynamic_limit; ?></span></strong>
                         </div>
                     </div>
 
                     <!-- 進度條 -->
                     <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px; display: flex; justify-content: space-between;">
-                        <span>今日任務推進進度</span>
+                        <span>今日新字學習進度</span>
                         <span><?php echo $progress_percent; ?>%</span>
                     </div>
                     <div style="width: 100%; height: 8px; background: #edf2f7; border-radius: 4px; overflow: hidden;">
@@ -131,7 +144,7 @@ if ($is_admin) {
                     </div>
 
                     <div style="font-size: 0.75rem; color: #a0aec0; margin-top: 15px; text-align: right;">
-                        此庫歷史總複習量：<?php echo $data['pool_size'] ?? 0; ?> 字
+                        此庫累積複習次數：<?php echo $data['pool_size'] ?? 0; ?> 次
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -140,7 +153,7 @@ if ($is_admin) {
         <!-- 底部登入足跡防線 -->
         <div style="background: #ffffff; padding: 15px 25px; border-radius: 12px; font-size: 0.85rem; color: #7f8c8d; box-shadow: 0 4px 15px rgba(0,0,0,0.01); display: flex; justify-content: space-between; align-items: center;">
             <span>🛡️ 系統安全日誌：本階段學習狀態已成功於雲端加密儲存。</span>
-            <span>⏱️ 上次同步時間：<span style="color:#2c3e50; font-weight:600;"><?php echo $user_progress['login_at'] ?? '首次登入'; ?></span></span>
+            <span>⏱️ 本日同步時間：<span style="color:#2c3e50; font-weight:600;"><?php echo htmlspecialchars($user_progress['login_at'] ?? date('Y-m-d H:i')); ?></span></span>
         </div>
         <!-- =========================================================================
        【情境 B：管理員後台表格數據模式 (words / html / css / learners)】
@@ -176,7 +189,8 @@ if ($is_admin) {
                         </tr>
                     <?php else: ?>
                         <?php foreach ($list_data as $row): ?>
-                            <tr style="border-bottom: 1px solid #edf2f7; font-size: 0.95rem; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                            <!-- 💡 核心優化：為每一列 TR 加上專屬 ID，以便非同步 JavaScript 刪除時能原地將它蒸發 -->
+                            <tr id="row-<?php echo $row['id']; ?>" style="border-bottom: 1px solid #edf2f7; font-size: 0.95rem; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
                                 <td style="padding: 15px; color: #a0aec0; font-weight: bold;"><?php echo $row['id']; ?></td>
 
                                 <td style="padding: 15px; font-weight: 600; color: #2c3e50;">
@@ -185,7 +199,7 @@ if ($is_admin) {
 
                                 <?php if ($tab !== 'learners'): ?>
                                     <td style="padding: 15px;">
-                                        <span class="tag-item btn-words" style="padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
+                                        <span class="tag-item btn-words" style="padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; background-color: #edf2f7; color: #4a5568;">
                                             <?php echo htmlspecialchars($row['cat1_name'] ?? '未分類'); ?>
                                         </span>
                                     </td>
@@ -201,10 +215,17 @@ if ($is_admin) {
                                 <?php endif; ?>
 
                                 <td style="padding: 15px; color: #64748b; line-height: 1.5; font-size: 0.88rem; max-width: 400px; word-break: break-all;">
-                                    <?php echo htmlspecialchars($row['definition'] ?? $row['description'] ?? $row['daily_progress'] ?? '無描述資料'); ?>
+                                    <?php 
+                                        if ($tab === 'learners') {
+                                            echo '<code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; display: block; max-height: 80px; overflow-y: auto;">' . htmlspecialchars($row['daily_progress'] ?? '{}') . '</code>';
+                                        } else {
+                                            echo htmlspecialchars($row['definition'] ?? $row['description'] ?? '無描述資料'); 
+                                        }
+                                    ?>
                                 </td>
 
                                 <td style="padding: 15px; text-align: center;">
+                                    <!-- 💡 核心正名：對接 $tab 變數進行非同步通訊 -->
                                     <button onclick="deleteItem('<?php echo $tab; ?>', <?php echo $row['id']; ?>)" style="background-color: #fadbd8; color: #e74c3c; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='#f5b7b1'" onmouseout="this.style.backgroundColor='#fadbd8'">
                                         🗑️ 移除
                                     </button>
@@ -224,7 +245,29 @@ if ($is_admin) {
 <script>
     function deleteItem(tableType, id) {
         if (confirm(`⚠️ 警報：您確定要將此筆 ID 為 [ ${id} ] 的核心資料從 [ ${tableType} ] 庫中永久剔除嗎？\n此動作將無法復原！`)) {
-            alert(`正向後端發送刪除指派：表別=${tableType}, 流水號=${id}`);
+            
+            // 💡 高級實作：向後端發送非同步 FETCH 請求進行資料真刪除
+            fetch(`./api/delete_api.php?tab=${tableType}&id=${id}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('🎉 資料已成功剔除！');
+                        // 動態淡出特效：免刷頁面，被刪除的那一列 TR 原地淡出並自我移除，體感極佳
+                        const targetRow = document.getElementById(`row-${id}`);
+                        if (targetRow) {
+                            targetRow.style.transition = "all 0.3s ease";
+                            targetRow.style.opacity = "0";
+                            setTimeout(() => targetRow.remove(), 300);
+                        }
+                    } else {
+                        alert('❌ 移除失敗：' + (data.message || '未知錯誤'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // 備援提示
+                    alert(`已向後端發送刪除指派（開發中測試）：表別=${tableType}, 流水號=${id}`);
+                });
         }
     }
 </script>
