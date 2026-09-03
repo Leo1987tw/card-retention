@@ -78,15 +78,13 @@ function drawCard(action, event) {
 
     let url = `./api/api.php?do=${encodeURIComponent(currentDo)}`;
 
-    if (typeof isTaskFinished !== 'undefined' && isTaskFinished) {
-        // 【完工特訓分支】
-        if (action === 'correct') url += `&mode=pool_hard`;   // 點特訓生字
-        else if (action === 'wrong') url += `&mode=pool_rand`;   // 點隨機盲刷
-    } else {
-        // 【一般學習分支】裡外完全一致，直接打包 &action=correct 或 wrong 傳給後端
-        if (action !== null && currentId !== -1) {
-            url += `&id=${currentId}&action=${action}`;
-        }
+    // 💡 裡外一體化優化：不論是【一般學習】還是【完工特訓】，全部統一口徑直接封裝 action 與 currentId
+    // 後端 api.php 已經會在內部自動透過 is_finished 狀態進行功能質變分流，前端不需再辛苦串接 &mode=
+    if (action !== null) {
+        url += `&action=${action}`;
+    }
+    if (currentId !== -1) {
+        url += `&id=${currentId}`;
     }
 
     fetch(url)
@@ -150,12 +148,11 @@ function restoreCardLayoutIfFinished() {
     if (!cardBoard || document.getElementById('card')) return; // 如果已經是卡片結構，直接跳過
 
     // 重新用 innerHTML 把卡片結構長回來
+    // 💡 物理閹割法修正：嚴格與您的 HTML 口徑一致，預留 <div class="new"></div> 容器
     cardBoard.innerHTML = `
         <div class="card" id="card">
             <div class="face front">
-                <!-- 💡 終極 Bug 修正（物理閹割法）：這裡徹底刪除原先寫死的 NEW 標籤 HTML！ -->
-                <!-- 預設改放一個空容器，複習或特訓模式下這裡在物理上根本沒有 NEW，絕對 100% 拆除殘留！ -->
-                <div id="card-new-container"></div> 
+                <div class="new"></div> 
                 <div class="learning-statement">
                     <span class="learning-level">記憶等級 LV <span id="current-level">--</span></span>
                     <span class="preview-count">此卡牌出現過 <span id="current-preview-count">--</span> 次</span>
@@ -210,16 +207,18 @@ function fillCardContent(data) {
     // =========================================================================
     // 💡 終極 Bug 修正（動態注入防線）：徹底根治 discreet 亮 NEW 的問題！
     // =========================================================================
-    const container = document.getElementById('card-new-container');
-    if (container) {
-        // 💡 黃金雙重前提鎖：必須同時滿足「今日任務尚未完工」且「歷史出現次數剛好為 1」的全新字，才動態注入標籤
-        if ((typeof isTaskFinished === 'undefined' || !isTaskFinished) && 
-            data.preview_count !== null && data.preview_count !== undefined && Number(data.preview_count) === 1) {
-            
-            container.innerHTML = '<div class="new">NEW</div>';
+    // 👑 依照規格改採 class 選擇器，精準捕捉您 HTML 結構中的 <div class="new"></div>
+    const cardNewContainer = document.querySelector('#card .new');
+    
+    if (cardNewContainer) {
+        // 💡 聽從後端 api.php 封裝好的最高指導訊號 data.is_new
+        // 後端已經幫您自動過濾了：未登入鎖死 false、完工特訓鎖死 false、舊字複習 false、只有一般模式新字才吐 true
+        if (data.is_new === true) {
+            // 一般模式下抽到全新字，直接將 NEW 填入 class="new" 這格容器內部！
+            cardNewContainer.innerText = 'NEW';
         } else {
-            // 舊字複習、生字特訓 (pool_hard)、隨機盲刷 (pool_rand) 一律清空，物理上消滅 NEW！
-            container.innerHTML = ''; 
+            // 未登入、完成課題特訓/隨機盲刷、或是舊字複習模式下，這格物理上全面保持清空，100% 拆除、絕不殘留！
+            cardNewContainer.innerText = ''; 
         }
     }
 }
