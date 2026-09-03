@@ -215,7 +215,7 @@ if (!$isLoggedIn || $learner_id <= 0) {
             $word_data = !empty($res) ? $res[0] : null;
         } else {
             // 遞補軌道：新字堆。舊字清空了且還有上限額度，放行加載從未背過的新字，並依 ID 順序發放
-            $res = $currentDB->q("SELECT $sql_fields FROM `$table` t $sql_join WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY id ASC LIMIT 1");
+            $res = $currentDB->q("SELECT $sql_fields FROM `$table` t $sql_join WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY RAND() LIMIT 1");
             $word_data = !empty($res) ? $res[0] : null;
             
             if ($word_data) {
