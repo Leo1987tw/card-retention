@@ -81,6 +81,7 @@ if (!$isLoggedIn) {
         "audio"         => $word_data['audio_url']   ?? "", 
         "level"         => null,
         "preview_count" => null,
+        "isNew"         => false,
         "isFinished"    => false
     ], JSON_UNESCAPED_UNICODE);
     exit; // 訪客模式在此處直接斬斷，絕不往下執行
@@ -189,6 +190,7 @@ if ($is_finished_now === true || $mode !== '') {
         "audio"         => $word_data['audio_url']   ?? "", 
         "level"         => ($mode === 'pool_rand') ? null : ($word_data['learning_level'] ?? 1),
         "preview_count" => ($mode === 'pool_rand') ? null : ($word_data['preview_count']  ?? 1),
+        "isNew"         => false,
         "isFinished"    => true
     ], JSON_UNESCAPED_UNICODE);
     exit; // 完工特訓在此直接中斷，零污染
@@ -198,6 +200,7 @@ if ($is_finished_now === true || $mode !== '') {
    核心修改 3：[學習進行中階段（未完工）：歷史作答紀錄與 under_lv5_count 快取更新]
    ========================================================================= */
 $is_this_turn_new = false; // 用來標記下一張抽出的字在本次撈取中是否為全新字
+$is_brand_new_word = false;
 
 if ($id > 0 && $action !== null) {
     
@@ -359,9 +362,8 @@ if ($has_due_words) {
         
         if ($word_data) {
             $word_data['learning_level'] = 1;
-            // 💡 完美對接舊前端：新字還沒有被點擊作答（即未被儲存進歷史紀錄）前
-            // 此處刻意傳回數字 1，完美驅動舊前端的 data.preview_count === 1 觸發 NEW 徽章注入！
             $word_data['preview_count'] = 1; 
+            $is_brand_new_word = true;
         }
     }
 }
@@ -378,17 +380,10 @@ if (!$word_data) {
 $final_category1 = $word_data['category_name']  ?? "";
 $final_category2 = $word_data['secondary_name'] ?? ""; 
 
-// 💡 核心修正：判斷此單字是否在歷史紀錄表 (learning_records) 中有建立過紀錄
-// 如果資料庫撈出來的欄位裡沒有包含 learning_level，代表它是全新、從未背過的字！
-$is_brand_new_word = !isset($word_data['learning_level']);
-
-// 👑 依照您的要求，強制在數據層精準配給：
+// 新字的標記獨立於 preview_count，避免舊字第一次複習時誤亮 NEW。
 if ($isLoggedIn && $is_finished_now === false && $is_brand_new_word) {
-    // 只有在【已登入】且【未完工】且【抽到全全新字】時，後端才強制發放 1 給前端亮 NEW！
     $final_preview_count = 1;
 } else {
-    // 未登入、已完工、或是舊字複習時，一律回傳資料庫原本的看過次數，若無則鎖死為 null
-    // 這能保證未登入與完工模式下，前端絕對拿不到 1，物理上 100% 絕對看不到 NEW！
     $final_preview_count = isset($word_data['preview_count']) ? intval($word_data['preview_count']) : null;
 }
 
@@ -402,7 +397,8 @@ echo json_encode([
     "translation"   => $word_data['translation'] ?? "",
     "audio"         => $word_data['audio_url']   ?? "", 
     "level"         => $word_data['learning_level'] ?? null,
-    "preview_count" => $final_preview_count, // 完美對接前端 count == 1 判斷
+    "preview_count" => $final_preview_count,
+    "isNew"         => $is_brand_new_word,
     "isFinished"    => $is_finished_now 
 ], JSON_UNESCAPED_UNICODE);
 

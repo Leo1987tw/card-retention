@@ -212,9 +212,9 @@ function fillCardContent(data) {
     // =========================================================================
     const container = document.querySelector('.new');
     if (container) {
-        // 💡 黃金雙重前提鎖：必須同時滿足「今日任務尚未完工」且「歷史出現次數剛好為 1」的全新字，才動態注入標籤
+        // 只有後端確認是新字，且今日任務尚未完工時才顯示標籤
         if ((typeof isTaskFinished === 'undefined' || !isTaskFinished) && 
-            data.preview_count !== null && data.preview_count !== undefined && Number(data.preview_count) === 1) {
+            data.isNew === true) {
             
             container.innerText = 'NEW';
         } else {
