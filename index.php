@@ -20,14 +20,21 @@ include_once "./api/db.php";
     <main>
         <?php
         
+        $page_map = [
+            'main' => 'main',
+            'card_board' => 'main',
+            'html' => 'main',
+            'css' => 'main',
+            'login' => 'login',
+            'register' => 'register',
+            'console' => 'console',
+            'logout' => 'logout'
+        ];
         $do = $_GET['do'] ?? 'main';
-        $file = "./front/$do.php";
+        $page = $page_map[$do] ?? 'main';
+        $file = "./front/$page.php";
 
-        if(file_exists($file)){
-            include_once $file;
-        }else {
-            include_once "./front/main.php";
-        }
+        include_once $file;
         
         ?>
     </main>

@@ -77,6 +77,7 @@ function drawCard(action, event) {
     const currentDo = urlParams.get('do') || 'main'; // 動態取得排堆主題
 
     let url = `./api/api.php?do=${encodeURIComponent(currentDo)}`;
+    const fetchOptions = {};
 
     if (typeof isTaskFinished !== 'undefined' && isTaskFinished) {
         // 【完工特訓分支】
@@ -85,11 +86,19 @@ function drawCard(action, event) {
     } else {
         // 【一般學習分支】裡外完全一致，直接打包 &action=correct 或 wrong 傳給後端
         if (action !== null && currentId !== -1) {
-            url += `&id=${currentId}&action=${action}`;
+            fetchOptions.method = 'POST';
+            fetchOptions.headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': window.csrfToken || ''
+            };
+            fetchOptions.body = new URLSearchParams({
+                id: String(currentId),
+                action
+            });
         }
     }
 
-    fetch(url)
+    fetch(url, fetchOptions)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {

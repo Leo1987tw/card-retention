@@ -17,6 +17,11 @@ $user_progress = json_decode($current_user['daily_progress'] ?? '{}', true);
 // 💡 權限判定：設定管理員名單（例如 admin），若非管理員，則強制鎖定在 'my_stats' 戰績分頁
 $is_admin = ($_SESSION['username'] === 'admin');
 $tab = isset($_GET['tab']) ? trim($_GET['tab']) : ($is_admin ? 'words' : 'my_stats');
+$allowed_tabs = $is_admin ? ['my_stats', 'words', 'html', 'css', 'learners'] : ['my_stats'];
+
+if (!in_array($tab, $allowed_tabs, true)) {
+    $tab = $is_admin ? 'words' : 'my_stats';
+}
 
 if (!$is_admin && $tab !== 'my_stats') {
     // 防繞過：普通學員若手動改網址企圖看字庫後台，直接強制打回個人戰績頁
@@ -247,7 +252,10 @@ if ($is_admin) {
         if (confirm(`⚠️ 警報：您確定要將此筆 ID 為 [ ${id} ] 的核心資料從 [ ${tableType} ] 庫中永久剔除嗎？\n此動作將無法復原！`)) {
             
             // 💡 高級實作：向後端發送非同步 FETCH 請求進行資料真刪除
-            fetch(`./api/delete_api.php?tab=${tableType}&id=${id}`, { method: 'POST' })
+                fetch(`./api/delete_api.php?tab=${encodeURIComponent(tableType)}&id=${encodeURIComponent(id)}`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': <?php echo json_encode($_SESSION['csrf_token']); ?> }
+                })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {

@@ -42,12 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username']) && isset(
         // 🌟 智慧補強：幫全新註冊的使用者，直接初始化一份乾淨的每日學習進度 JSON 大底座！
         $today_date = date('Y-m-d');
         $init_progress = [
-            'last_date' => $today_date,
+            'date'      => $today_date,
             'login_at'  => date('Y-m-d H:i:s'),
             'sets' => [
-                'words' => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false],
-                'html'  => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false],
-                'css'   => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false]
+                'words' => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'under_lv5_count' => 0, 'is_finished' => false],
+                'html'  => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'under_lv5_count' => 0, 'is_finished' => false],
+                'css'   => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'under_lv5_count' => 0, 'is_finished' => false]
             ]
         ];
         $init_progress_json = json_encode($init_progress, JSON_UNESCAPED_UNICODE);

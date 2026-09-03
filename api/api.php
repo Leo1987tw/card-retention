@@ -20,6 +20,26 @@ $do     = isset($_GET['do'])     ? trim($_GET['do']) : 'main';
 $id     = (isset($_GET['id']) && $_GET['id'] !== 'null') ? intval($_GET['id']) : 0;
 $action = (isset($_GET['action']) && $_GET['action'] !== 'null') ? trim($_GET['action']) : null; 
 $mode   = isset($_GET['mode'])   ? trim($_GET['mode']) : ''; // 💡 完美相容舊版：精準擷取 mode 參數
+$record_type = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = isset($_POST['id']) ? intval($_POST['id']) : $id;
+    $action = isset($_POST['action']) ? trim($_POST['action']) : $action;
+}
+
+if ($action !== null) {
+    $csrf_header = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrf_header)) {
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => '無效的請求。'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (!in_array($action, ['correct', 'wrong'], true)) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => '無效的作答動作。'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
 
 // 智慧別名路由表：對接三個不同的排堆（words、html_terms、css_terms）
 $route_map = [
@@ -39,6 +59,7 @@ if (array_key_exists($do, $route_map)) {
     $setKey = $do;
     $currentDB = new DB($table);
 }
+$record_type = $setKey === 'words' ? 'main' : $setKey;
 
 // 智慧動態 SQL 欄位構造器
 if ($do === 'main' || $do === 'card_board') {
@@ -106,6 +127,15 @@ if (!empty($user['daily_progress'])) {
     $db_progress = json_decode($user['daily_progress'], true);
 }
 
+if (!is_array($db_progress)) {
+    $db_progress = [];
+}
+
+if (!isset($db_progress['date']) && isset($db_progress['last_date'])) {
+    $db_progress['date'] = $db_progress['last_date'];
+    unset($db_progress['last_date']);
+}
+
 // 跨天檢查：若欄位不存在，或日期不是今天
 if (!isset($db_progress['date']) || $db_progress['date'] !== $current_date) {
     
@@ -164,11 +194,11 @@ if ($is_finished_now === true || $mode !== '') {
     // 精准辨識舊前端傳遞的 mode 分支
     if ($mode === 'pool_hard') {
         // 生字特訓：專門抽取該使用者字庫中 Level 最低的生字進行突擊
-        $res = $currentDB->q("SELECT lr.*, $sql_fields FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id $sql_join WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY lr.learning_level ASC, RAND() LIMIT 1");
+        $res = $currentDB->q("SELECT lr.*, $sql_fields FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id $sql_join WHERE lr.learner_id = '$learner_id' AND lr.type = '$record_type' ORDER BY lr.learning_level ASC, RAND() LIMIT 1");
         $word_data = !empty($res) ? $res[0] : null; // 👑 終極修正：精準取得第 0 筆物件，徹底消除全空 Bug
     } else {
         // 隨機盲刷（含 pool_rand）：在已建立的字庫記錄中完全隨機盲抽
-        $res = $currentDB->q("SELECT lr.*, $sql_fields FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id $sql_join WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' ORDER BY RAND() LIMIT 1");
+        $res = $currentDB->q("SELECT lr.*, $sql_fields FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id $sql_join WHERE lr.learner_id = '$learner_id' AND lr.type = '$record_type' ORDER BY RAND() LIMIT 1");
         $word_data = !empty($res) ? $res[0] : null; // 👑 終極修正：精準取得第 0 筆物件，徹底消除全空 Bug
     }
 
@@ -204,7 +234,7 @@ $is_brand_new_word = false;
 
 if ($id > 0 && $action !== null) {
     
-    $record = $LearningRecord->find(['learner_id' => $learner_id, 'word_id' => $id, 'type' => $do]);
+    $record = $LearningRecord->find(['learner_id' => $learner_id, 'word_id' => $id, 'type' => $record_type]);
 
     if (!$record) {
         /* ----- 全新字初次見面防線 ----- */
@@ -261,7 +291,7 @@ if ($id > 0 && $action !== null) {
     $save_data = [
         'learner_id'       => $learner_id,
         'word_id'          => $id,
-        'type'             => $do,
+        'type'             => $record_type,
         'learning_level'   => $new_level,
         'preview_count'    => $new_preview_count,
         'last_review_at'   => date('Y-m-d H:i:s'),
@@ -289,9 +319,10 @@ $wrong      = intval($progress['wrong']);
 $new_count  = intval($progress['new_word_count']);
 $pool_size  = intval($progress['pool_size']);
 $under_lv5  = intval($progress['under_lv5_count']); // 直接讀取 Session 快取，免去重複 COUNT 撈庫效能損耗
+$new_limit  = 0;
 
 // 1. 優先檢查舊字庫中是否有今天到期或過期的舊字
-$due_where = "WHERE `learner_id` = '$learner_id' AND `type` = '$do' AND `next_review_date` <= '$current_date'";
+$due_where = "WHERE `learner_id` = '$learner_id' AND `type` = '$record_type' AND `next_review_date` <= '$current_date'";
 $has_due_words = ($LearningRecord->count($due_where) > 0);
 
 $isTodayTaskDone = false;
@@ -349,14 +380,14 @@ if ($is_finished_now === true) {
 
 if ($has_due_words) {
     /* ----- 優先軌道：隨機抽取今天到期舊字 ----- */
-    $res = $currentDB->q("SELECT lr.*, $sql_fields FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id $sql_join WHERE lr.learner_id = '$learner_id' AND lr.type = '$do' AND lr.next_review_date <= '$current_date' ORDER BY RAND() LIMIT 1");
+    $res = $currentDB->q("SELECT lr.*, $sql_fields FROM `learning_records` lr JOIN `$table` t ON lr.word_id = t.id $sql_join WHERE lr.learner_id = '$learner_id' AND lr.type = '$record_type' AND lr.next_review_date <= '$current_date' ORDER BY RAND() LIMIT 1");
     // 💡 關鍵修正：從陣列中解鎖、直接取得第 0 筆關聯資料，確保轉為單一物件輸出
     $word_data = !empty($res) ? $res[0] : null; 
 } else {
     /* ----- 遞補軌道：抽全新字（智慧防重複防防線） ----- */
     // 💡 利用 NOT IN 子查詢，確保隨機抽出的新字絕對不可能跟舊字庫重複
     if ($new_count < $new_limit) {
-        $res = $currentDB->q("SELECT $sql_fields FROM `$table` t $sql_join WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$do') ORDER BY RAND() LIMIT 1");
+        $res = $currentDB->q("SELECT $sql_fields FROM `$table` t $sql_join WHERE t.id NOT IN (SELECT word_id FROM `learning_records` WHERE learner_id = '$learner_id' AND type = '$record_type') ORDER BY RAND() LIMIT 1");
         // 💡 關鍵修正：從陣列中解鎖、直接取得第 0 筆關聯資料，確保轉為單一物件輸出
         $word_data = !empty($res) ? $res[0] : null; 
         

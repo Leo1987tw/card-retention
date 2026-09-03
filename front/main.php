@@ -107,4 +107,5 @@ if (isset($_SESSION['daily_progress']['sets'][$setKey]['is_finished'])) {
 <script>
     // 【核心同步】使用 PHP 直接將當日完工真理印給 JavaScript 全域變數
     let isTaskFinished = <?php echo $php_is_finished ? 'true' : 'false'; ?>;
+    window.csrfToken = <?php echo json_encode($_SESSION['csrf_token']); ?>;
 </script>

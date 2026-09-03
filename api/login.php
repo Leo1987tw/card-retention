@@ -18,7 +18,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 
     // 移除前後空白字元
     $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+    $password = $_POST['password'];
 
     // 使用安全陣列傳參查詢使用者
     $learner = $Learner->find(['username' => $username]);
@@ -27,6 +27,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     if ($learner && password_verify($password, $learner['password'])) {
 
         // 核心對齊：存入全域登入識別 Session
+            session_regenerate_id(true);
         $_SESSION['username'] = $learner['username'];
 
         /* =========================================================================
@@ -41,14 +42,23 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
         // 將進度 JSON 字串轉成 PHP 陣列
         $progress_data = json_decode($db_progress_json, true);
 
+        if (!is_array($progress_data)) {
+            $progress_data = [];
+        }
+
+        if (!isset($progress_data['date']) && isset($progress_data['last_date'])) {
+            $progress_data['date'] = $progress_data['last_date'];
+            unset($progress_data['last_date']);
+        }
+
         // 🌟 防空與跨日重置機制：如果資料庫是 NULL 或新一天，立刻初始化乾淨的結構
-        if (empty($progress_data) || !isset($progress_data['last_date']) || $progress_data['last_date'] !== $today_date) {
+        if (empty($progress_data) || !isset($progress_data['date']) || $progress_data['date'] !== $today_date) {
             $progress_data = [
-                'last_date' => $today_date,
+                'date' => $today_date,
                 'sets' => [
-                    'words' => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false],
-                    'html'  => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false],
-                    'css'   => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'is_finished' => false]
+                    'words' => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'under_lv5_count' => 0, 'is_finished' => false],
+                    'html'  => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'under_lv5_count' => 0, 'is_finished' => false],
+                    'css'   => ['total' => 0, 'wrong' => 0, 'new_word_count' => 0, 'pool_size' => 0, 'under_lv5_count' => 0, 'is_finished' => false]
                 ]
             ];
         }
