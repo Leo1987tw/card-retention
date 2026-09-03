@@ -155,7 +155,7 @@ function restoreCardLayoutIfFinished() {
             <div class="face front">
                 <!-- 💡 終極 Bug 修正（物理閹割法）：這裡徹底刪除原先寫死的 NEW 標籤 HTML！ -->
                 <!-- 預設改放一個空容器，複習或特訓模式下這裡在物理上根本沒有 NEW，絕對 100% 拆除殘留！ -->
-                <div id="card-new-container"></div> 
+                <div class="new"></div> 
                 <div class="learning-statement">
                     <span class="learning-level">記憶等級 LV <span id="current-level">--</span></span>
                     <span class="preview-count">此卡牌出現過 <span id="current-preview-count">--</span> 次</span>
@@ -210,16 +210,16 @@ function fillCardContent(data) {
     // =========================================================================
     // 💡 終極 Bug 修正（動態注入防線）：徹底根治 discreet 亮 NEW 的問題！
     // =========================================================================
-    const container = document.getElementById('card-new-container');
+    const container = document.querySelector('.new');
     if (container) {
         // 💡 黃金雙重前提鎖：必須同時滿足「今日任務尚未完工」且「歷史出現次數剛好為 1」的全新字，才動態注入標籤
         if ((typeof isTaskFinished === 'undefined' || !isTaskFinished) && 
             data.preview_count !== null && data.preview_count !== undefined && Number(data.preview_count) === 1) {
             
-            container.innerHTML = '<div class="new">NEW</div>';
+            container.innerText = 'NEW';
         } else {
             // 舊字複習、生字特訓 (pool_hard)、隨機盲刷 (pool_rand) 一律清空，物理上消滅 NEW！
-            container.innerHTML = ''; 
+            container.innerText = ''; 
         }
     }
 }

@@ -378,6 +378,20 @@ if (!$word_data) {
 $final_category1 = $word_data['category_name']  ?? "";
 $final_category2 = $word_data['secondary_name'] ?? ""; 
 
+// 💡 核心修正：判斷此單字是否在歷史紀錄表 (learning_records) 中有建立過紀錄
+// 如果資料庫撈出來的欄位裡沒有包含 learning_level，代表它是全新、從未背過的字！
+$is_brand_new_word = !isset($word_data['learning_level']);
+
+// 👑 依照您的要求，強制在數據層精準配給：
+if ($isLoggedIn && $is_finished_now === false && $is_brand_new_word) {
+    // 只有在【已登入】且【未完工】且【抽到全全新字】時，後端才強制發放 1 給前端亮 NEW！
+    $final_preview_count = 1;
+} else {
+    // 未登入、已完工、或是舊字複習時，一律回傳資料庫原本的看過次數，若無則鎖死為 null
+    // 這能保證未登入與完工模式下，前端絕對拿不到 1，物理上 100% 絕對看不到 NEW！
+    $final_preview_count = isset($word_data['preview_count']) ? intval($word_data['preview_count']) : null;
+}
+
 echo json_encode([
     "status"        => "success",
     "id"            => $word_data['word_id']     ?? $word_data['id'], 
@@ -388,8 +402,8 @@ echo json_encode([
     "translation"   => $word_data['translation'] ?? "",
     "audio"         => $word_data['audio_url']   ?? "", 
     "level"         => $word_data['learning_level'] ?? null,
-    "preview_count" => $word_data['preview_count']  ?? null,
-    "isFinished"    => false // 進行中
+    "preview_count" => $final_preview_count, // 完美對接前端 count == 1 判斷
+    "isFinished"    => $is_finished_now 
 ], JSON_UNESCAPED_UNICODE);
 
 exit;
