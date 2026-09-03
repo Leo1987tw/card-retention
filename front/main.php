@@ -29,7 +29,7 @@ if (isset($_SESSION['daily_progress']['sets'][$setKey]['is_finished'])) {
                 <!-- 【正常學習】呈現標準的單字 3D 卡牌結構 -->
                 <div class="card" id="card">
                     <div class="face front">
-                        <div class="new">NEW</div>
+                        <div class="new"></div>
                         <div class="learning-statement">
                             <span class="learning-level">
                                 記憶等級 LV <span id="current-level">--</span>
