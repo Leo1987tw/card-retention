@@ -190,18 +190,21 @@ function fillCardContent(data) {
         'category2': data.category2
     };
 
-    // 安全遍歷填充所有欄位文字
-    Object.keys(elementMapping).forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.innerText = elementMapping[id] || '';
+    // 💡 終極安全防禦優化：遍歷填充所有欄位文字，不管前端用 id 還是 class，一律精準捕捉並填入！
+    Object.keys(elementMapping).forEach(key => {
+        // 先嘗試抓 id 節點，抓不到就改抓 class 節點，徹底終結空白 Bug！
+        const element = document.getElementById(key) || document.querySelector(`#card .${key}`);
+        if (element) {
+            element.innerText = elementMapping[key] || '';
+        }
     });
 
     // 渲染上方等級數據：生字特訓會如實亮出數據，隨機盲刷收到 null 則乾淨呈現 '--'
-    const levelSpan = document.getElementById('current-level');
+    const levelSpan = document.getElementById('current-level') || document.querySelector('#current-level');
     if (levelSpan) levelSpan.innerText = (data.level !== null && data.level !== undefined) ? data.level : '--';
 
     // 渲染上方出現次數：生字特訓會如實亮出數據，隨機盲刷收到 null 則乾淨呈現 '--'
-    const countSpan = document.getElementById('current-preview-count');
+    const countSpan = document.getElementById('current-preview-count') || document.querySelector('#current-preview-count');
     if (countSpan) countSpan.innerText = (data.preview_count !== null && data.preview_count !== undefined) ? data.preview_count : '--';
 
     // =========================================================================
