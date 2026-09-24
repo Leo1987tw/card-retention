@@ -37,7 +37,7 @@ class DB
     {
         $tmp = [];
         foreach ($array as $key => $value) {
-            $tmp[] = "`$key` = :$$value";
+            $tmp[] = "`$key` = :$key";
         }
         return $tmp;
     }
