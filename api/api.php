@@ -251,7 +251,9 @@ if ($id > 0 && $action !== null) {
     } else {
         /* ----- 舊單字複習邏輯 ----- */
         $old_level = intval($record['learning_level']);
-        $new_preview_count = intval($record['preview_count']) + 1; // 💡 鐵律：看過次數無條件往上累加 (+1)
+        
+        // 👑 微調 1：作答時「不再累加」次數，直接讀取並沿用資料庫現有的數值
+        $new_preview_count = intval($record['preview_count']); 
 
         if ($action === 'wrong') {
             // 💡 答錯最高防線：不論原本幾級，只要答錯記憶等級強制降回 1 級
@@ -411,10 +413,16 @@ if (!$word_data) {
 $final_category1 = $word_data['category_name']  ?? "";
 $final_category2 = $word_data['secondary_name'] ?? ""; 
 
-// 新字的標記獨立於 preview_count，避免舊字第一次複習時誤亮 NEW。
-if ($isLoggedIn && $is_finished_now === false && $is_brand_new_word) {
-    $final_preview_count = 1;
+// 👑 核心微調：只要成功撈到單字，回傳前直接將看過次數加 1（新字從 0 變 1，舊字無條件 +1）
+if ($isLoggedIn && $is_finished_now === false) {
+    if ($is_brand_new_word) {
+        $final_preview_count = 1; // 全新字第一次呈現在畫面上
+    } else {
+        // 舊字直接將資料庫內原有的看過次數 +1
+        $final_preview_count = isset($word_data['preview_count']) ? (intval($word_data['preview_count']) + 1) : 1;
+    }
 } else {
+    // 訪客或特訓完工模式
     $final_preview_count = isset($word_data['preview_count']) ? intval($word_data['preview_count']) : null;
 }
 
@@ -428,7 +436,7 @@ echo json_encode([
     "translation"   => $word_data['translation'] ?? "",
     "audio"         => $word_data['audio_url']   ?? "", 
     "level"         => $word_data['learning_level'] ?? null,
-    "preview_count" => $final_preview_count,
+    "preview_count" => $final_preview_count, // 💡 完美輸出：前端拿到的數值已包含本次查看
     "isNew"         => $is_brand_new_word,
     "isFinished"    => $is_finished_now 
 ], JSON_UNESCAPED_UNICODE);
